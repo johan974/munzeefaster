@@ -1,5 +1,5 @@
 {
-  "name": "pwa-complete-guide",
+  "name": "munzeefaster",
   "version": "1.0.0",
   "description": "A complete guide to PWAs. Building a simple Instagram clone.",
   "main": "index.js",
@@ -14,7 +14,7 @@
     "complete",
     "tutorial"
   ],
-  "author": "Maximilian Schwarzmüller",
+  "author": "JoJoHo",
   "license": "ISC",
   "devDependencies": {
     "http-server": "^0.10.0"
