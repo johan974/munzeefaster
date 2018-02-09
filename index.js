@@ -1,17 +1,18 @@
+var sslRedirect = require('heroku-ssl-redirect');
+var express = require('express');
+var app = express();
 
-var static = require( 'node-static' ),
-    port = 8080,
-    http = require( 'http' );
+// enable ssl redirect
+app.use(sslRedirect());
 
-// config
-var file = new static.Server( './public', {
-    cache: 3600,
-    gzip: true
-} );
+// app.get('/', function(req, res){
+//
+// // serve
+// http.createServer( function ( request, response ) {
+//     request.addListener( 'end', function () {
+//         file.serve( request, response );
+//     } ).resume();
+// } ).listen( port );
 
-// serve
-http.createServer( function ( request, response ) {
-    request.addListener( 'end', function () {
-        file.serve( request, response );
-    } ).resume();
-} ).listen( port );
+app.use(express.static('public'));
+app.listen(8080);

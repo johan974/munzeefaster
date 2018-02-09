@@ -4,7 +4,7 @@
   "description": "A complete guide to PWAs. Building a simple Instagram clone.",
   "main": "index.js",
   "scripts": {
-    "start" : "node index.js",
+    "start": "node index.js",
     "start1": "http-server -c-1"
   },
   "keywords": [
@@ -27,5 +27,9 @@
   "bugs": {
     "url": "https://github.com/johan974/munzeefaster/issues"
   },
-  "homepage": "https://github.com/johan974/munzeefaster#readme"
+  "homepage": "https://github.com/johan974/munzeefaster#readme",
+  "dependencies": {
+    "express": "^4.16.2",
+    "heroku-ssl-redirect": "0.0.4"
+  }
 }
