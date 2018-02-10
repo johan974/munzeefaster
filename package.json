@@ -18,7 +18,8 @@
   "author": "JoJoHo",
   "license": "ISC",
   "devDependencies": {
-    "http-server": "^0.10.0"
+    "http-server": "^0.10.0",
+    "nodemon": "^1.14.12"
   },
   "repository": {
     "type": "git",
@@ -29,6 +30,8 @@
   },
   "homepage": "https://github.com/johan974/munzeefaster#readme",
   "dependencies": {
-    "express": "^4.16.2"
+    "express": "^4.16.2",
+    "express-session": "^1.15.6",
+    "mongodb": "^3.0.2"
   }
 }
