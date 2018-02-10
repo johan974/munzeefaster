@@ -57,7 +57,7 @@ app.use( '/logout', function(req, res, next) {
 });
 
 app.get("/munzeefaster",function(request, response){
-    loginToMunzee();
+    loginToMunzee( request, response);
 });
 // code=JkEQQmjgbPavmqtJtbYEyAD7lYAMYLKBEZhlfeTn&state=yourinfo
 app.get("/handle_oauth",function(request, response){
@@ -86,14 +86,15 @@ function loginToMunzee() {
   var munzeeRQ = "https://api.munzee.com/oauth?response_type=code&client_id=" +
         clientid + "&redirect_uri=" + redirect_uri + "&scope=read";
   console.log( "MunzeeURL: " + munzeeRQ);
-  fetch( munzeeRQ)
-  .then( function( response) {
-    console.log( response);
-    return response.json();
-  }).then( function( response2) {
-    console.log( response2);
-    console.log( 'Answer: ' + response2.origin);
-  }).catch( function( err) {
-    console.log( 'Error: ' + err);
-  });
+  res.redirect(munzeeRQ);
+  // fetch( munzeeRQ)
+  // .then( function( response) {
+  //   console.log( response);
+  //   return response.json();
+  // }).then( function( response2) {
+  //   console.log( response2);
+  //   console.log( 'Answer: ' + response2.origin);
+  // }).catch( function( err) {
+  //   console.log( 'Error: ' + err);
+  // });
 }
