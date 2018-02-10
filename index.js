@@ -81,7 +81,7 @@ function showAccounts() {
   });
 }
 function loginToMunzee() {
-  var clientid = "33a0869ef82d827b98c87235247c6f1e";
+  var clientid = process.env.CLIENTID;
   var redirect_uri = "https://munzeefaster.herokuapp.com/handle_oauth";
   var munzeeRQ = "https://api.munzee.com/oauth?response_type=code&client_id=" +
         clientid + "&redirect_uri=" + redirect_uri + "&scope=read";
