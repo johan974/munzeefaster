@@ -10,6 +10,7 @@ var bodyParser = require('body-parser');
 
 var db = monk(URL);
 var collection = db.get('accounts');
+var redirect_uri = "https://munzeefaster.herokuapp.com/handle_oauth";
 
 //  session authentication
 app.use(session({
@@ -26,7 +27,7 @@ app.post("/login", function (req, res, next) {
     collection.findOne( { "user" : req.body.username},{},function(e,doc){
       if( doc !== undefined && doc != null && req.body.username === doc.user &&
           req.body.password === doc.pw) {
-        req.session.accessToken = 'xyz';
+        req.session.accessToken = req.body.username;
         req.session.loggingin = false;
         res.redirect('/index.html');
         next();
@@ -64,9 +65,39 @@ app.get("/handle_oauth",function(request, response){
     // depricated: var id = request.param('id');
     var code = request.query.code;
     var state = request.query.state;
-    var obj = { "code" : code, "state" : state };
-    response.writeHead(200, {"Content-Type": "application/json"});
-    response.write(JSON.stringify(obj));
+    fetch( 'https://api.munzee.com/oauth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify( {
+        'clientid' : process.env.CLIENTID,
+        'client_secret' : process.env.CLIENTSECRET,
+        'grant_type' : 'authorization_code',
+        'code' : code,
+        'redirect_uri' : redirect_uri
+      })
+    }).then( function( response) {
+      // We now receive an immediate response with the tokens
+        console.log( response);
+        var access_token = response.access_token;
+        var refresh_token = response.refresh_token;
+        var token_type = response.token_type;
+        var expires = response.expires;
+        var expires_in = response.expires_in;
+        collection.update( { "user": state },
+                           { $set: { "access_token":access_token,
+                                     "refresh_token" : refresh_token,
+                                     "token_type": token_type,
+                                     "expires": expires,
+                                     "expires_in": expires_in
+                                      }});
+        res.redirect('/index.html');
+    }).catch( function( err) {
+      console.log( 'Error: ' + err);
+      return ;
+    });
 });
 
 app.use(express.static( __dirname + '/public'));
@@ -80,21 +111,11 @@ function showAccounts() {
     console.log( "ShowingAccounts() the accounts --");
   });
 }
-function loginToMunzee() {
+function loginToMunzee( request) {
   var clientid = process.env.CLIENTID;
-  var redirect_uri = "https://munzeefaster.herokuapp.com/handle_oauth";
   var munzeeRQ = "https://api.munzee.com/oauth?response_type=code&client_id=" +
-        clientid + "&redirect_uri=" + redirect_uri + "&scope=read";
+        clientid + "&redirect_uri=" + redirect_uri + "&scope=read&state=" +
+        request.session.accessToken;
   console.log( "MunzeeURL: " + munzeeRQ);
   res.redirect(munzeeRQ);
-  // fetch( munzeeRQ)
-  // .then( function( response) {
-  //   console.log( response);
-  //   return response.json();
-  // }).then( function( response2) {
-  //   console.log( response2);
-  //   console.log( 'Answer: ' + response2.origin);
-  // }).catch( function( err) {
-  //   console.log( 'Error: ' + err);
-  // });
 }
