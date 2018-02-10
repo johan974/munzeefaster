@@ -3,25 +3,13 @@ var app = express();
 const dbuser = process.env.MONGODB_USERNAME;
 const dbpass = process.env.MONGODB_PASSWORD;
 var URL = 'mongodb://' + dbuser + ':' + dbpass + '@ds229008.mlab.com:29008/munzeefastermongodb';
-var MongoClient = require('mongodb').MongoClient;
-var db;
+var mongo = require('mongodb');
+var monk = require('monk');
 var session = require('express-session');
-var bodyParser = require('body-parser')
+var bodyParser = require('body-parser');
 
-// Database setup
-console.log( "Testing mongodb>>")
-MongoClient.connect(URL, function(err, database) {
-    if (err) {
-      console.log( 'Cannot connect to mongodb' + err);
-      return
-    }
-    db = database.db('munzeefastermongodb');
-    db.collection('accounts').find().toArray(function(err, results) {
-      console.log(results)
-      // send HTML file populated with quotes here
-    })
-  });
-console.log( "Testing mongodb<<")
+var db = monk(URL);
+var collection = db.get('accounts');
 
 //  session authentication
 app.use(session({
@@ -34,20 +22,25 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(bodyParser.json());
-app.post("/login", function (req, res) {
-    console.log( 'Username' + req.body.username);
-    console.log( 'PW ' + req.body.password);
-    var user = getAccount( req.body.username);
-    console.log( 'Account' + user);
-    req.session.accessToken = 'xyz';
-    res.redirect('/index.html');
-    res.session.loggingin = false;
-    res.end;
-    next();
-    return;
+app.post("/login", function (req, res, next) {
+    collection.findOne( { "user" : req.body.username},{},function(e,doc){
+      if( doc !== undefined && doc != null && req.body.username === doc.user &&
+          req.body.password === doc.pw) {
+        req.session.accessToken = 'xyz';
+        req.session.loggingin = false;
+        res.redirect('/index.html');
+        next();
+        return;
+      } else {
+        console.log( 'Invalid username or password');
+        res.redirect('/login.html');
+        return;
+      }
+    });
 });
 app.use(function(req, res, next) {       // Catches access to all other pages
-    if( req.session.loggingin !== null && req.session.loggingin == false && !req.session.accessToken) {       // requiring a valid access token
+    if( req.session.loggingin !== null && req.session.loggingin == false &&
+        !req.session.accessToken) {       // requiring a valid access token
         console.log( 'Empty access token, redirect to login');
         res.redirect('/login.html');
         res.session.loggingin = true;
@@ -57,17 +50,14 @@ app.use(function(req, res, next) {       // Catches access to all other pages
     }
 });
 app.use( '/logout', function(req, res, next) {
-  res.session.accessToken = null;
-  res.session.loggingin = true;
+  req.session.accessToken = null;
+  req.session.loggingin = true;
   res.redirect('/login.html');
   next();
 });
 
-app.get("/test_pathname_var/:id",function(request, response){
-    var id = request.params.id;
-    var obj = { id : id, Content : "content " +id };
-    response.writeHead(200, {"Content-Type": "application/json"});
-    response.write(JSON.stringify(obj));
+app.get("/munzeefaster",function(request, response){
+    loginToMunzee();
 });
 // code=JkEQQmjgbPavmqtJtbYEyAD7lYAMYLKBEZhlfeTn&state=yourinfo
 app.get("/handle_oauth",function(request, response){
@@ -79,20 +69,31 @@ app.get("/handle_oauth",function(request, response){
     response.write(JSON.stringify(obj));
 });
 
-// app.post('/', function (req, res) {
-//   res.send('POST request to the homepage')
-// });
-
 app.use(express.static( __dirname + '/public'));
 var port = process.env.PORT || 8000;
 app.listen(port);
 
 function showAccounts() {
-  console.log( "Showing the accounts");
-  db.collection('accounts').find().toArray(function(err, results) {
-    console.log(results)
-  })
+  console.log( "ShowingAccounts() accounts --");
+  collection.find({},{},function(e,docs){
+    console.log(docs);
+    console.log( "ShowingAccounts() the accounts --");
+  });
 }
-function getAccount( username) {
-  return db.collection('accounts').find( { "user" : username });
+function loginToMunzee() {
+  var clientid = "33a0869ef82d827b98c87235247c6f1e";
+  var redirect_uri = "https://munzeefaster.herokuapp.com/handle_oauth";
+  var munzeeRQ = "https://api.munzee.com/oauth?response_type=code&client_id=" +
+        clientid + "&redirect_uri=" + redirect_uri + "&scope=read";
+  console.log( "MunzeeURL: " + munzeeRQ);
+  fetch( munzeeRQ)
+  .then( function( response) {
+    console.log( response);
+    return response.json();
+  }).then( function( response2) {
+    console.log( response2);
+    console.log( 'Answer: ' + response2.origin);
+  }).catch( function( err) {
+    console.log( 'Error: ' + err);
+  });
 }
