@@ -71,13 +71,10 @@ app.get("/handle_oauth",function(request, response){
     var code = request.query.code;
     var state = request.query.state;
     var args = {
-        data: {
-          "clientid" : process.env.CLIENTID,
-          "client_secret" : process.env.CLIENTSECRET,
-          "grant_type" : "authorization_code",
-          "code" : code,
-          "redirect_uri" : redirect_uri
-        },
+        data: "clientid="+process.env.CLIENTID +
+              "&client_secret="+process.env.CLIENTSECRET +
+              "&grant_type=authorization_code&code="+code +
+              "&redirect_uri=" + redirect_uri,
         headers: { "Content-Type": "application/json",
                    "Accept": "application/json" }
     };
