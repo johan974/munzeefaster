@@ -71,21 +71,21 @@ app.get("/handle_oauth",function(request, response){
     var code = request.query.code;
     var state = request.query.state;
     var args = {
-        data: JSON.stringify( {
-          'clientid' : process.env.CLIENTID,
-          'client_secret' : process.env.CLIENTSECRET,
-          'grant_type' : 'authorization_code',
-          'code' : code,
-          'redirect_uri' : redirect_uri
-        }),
-        headers: { 'Content-Type': 'application/json',
-                   'Accept': 'application/json' }
+        data: {
+          "clientid" : process.env.CLIENTID,
+          "client_secret" : process.env.CLIENTSECRET,
+          "grant_type" : "authorization_code",
+          "code" : code,
+          "redirect_uri" : redirect_uri
+        },
+        headers: { "Content-Type": "application/json",
+                   "Accept": "application/json" }
     };
     client.post( 'https://api.munzee.com/oauth/login', args, function (data, response) {
       // We now receive an immediate response with the tokens
-        console.log( "Response: ");
+        console.log( "******* Response: ");
         console.log( response);
-        console.log( "Data: ");
+        console.log( "******* Data: ");
         console.log( data);
         var access_token = data.access_token;
         var refresh_token = data.refresh_token;
@@ -100,7 +100,7 @@ app.get("/handle_oauth",function(request, response){
                                      "expires": expires,
                                      "expires_in": expires_in
                                       }});
-        res.redirect('/index.html');
+        response.redirect('/index.html');
     }).on( 'error', function( err) {
       console.log( 'Error: ' + err);
       return ;
