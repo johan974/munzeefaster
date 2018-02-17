@@ -5,6 +5,7 @@ var app = express();
 // var Client = require('node-rest-client').Client;
 // var client = new Client();
 
+// http://samwize.com/2013/08/31/simple-http-get-slash-post-request-in-node-dot-js/
 var requestPost = require('request');
 
 const dbuser = process.env.MONGODB_USERNAME;
@@ -102,23 +103,24 @@ app.get("/handle_oauth",function(request, response){
         console.log( responsePost);
         console.log( "******* Body: ");
         console.log( body);
-        var access_token = body.access_token;
-        var refresh_token = body.refresh_token;
-        var token_type = body.token_type;
-        var expires = body.expires;
-        var expires_in = body.expires_in;
-        // 'state' = username
-        collection.update( { "user": state },
-                           { $set: { "access_token":access_token,
-                                     "refresh_token" : refresh_token,
-                                     "token_type": token_type,
-                                     "expires": expires,
-                                     "expires_in": expires_in
-                                      }});
+        if (!error && response.statusCode == 200) {
+          var access_token = body.access_token;
+          var refresh_token = body.refresh_token;
+          var token_type = body.token_type;
+          var expires = body.expires;
+          var expires_in = body.expires_in;
+          // 'state' = username
+          collection.update( { "user": state },
+                             { $set: { "access_token":access_token,
+                                       "refresh_token" : refresh_token,
+                                       "token_type": token_type,
+                                       "expires": expires,
+                                       "expires_in": expires_in
+                                        }});
+        } else {
+          console.log( "Error: " + error); 
+        }
         response.redirect('/index.html');
-    }, function( err) {
-      console.log( 'Error: ' + err);
-      return ;
     });
 });
 
