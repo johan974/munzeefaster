@@ -33,6 +33,7 @@
     "express": "^4.16.2",
     "express-session": "^1.15.6",
     "mongodb": "^3.0.2",
-    "monk": "^6.0.5"
+    "monk": "^6.0.5",
+    "node-rest-client": "^3.1.0"
   }
 }

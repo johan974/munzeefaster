@@ -1,5 +1,10 @@
 var express = require('express');
 var app = express();
+
+// rest client
+var Client = require('node-rest-client').Client;
+var client = new Client();
+
 const dbuser = process.env.MONGODB_USERNAME;
 const dbpass = process.env.MONGODB_PASSWORD;
 var URL = 'mongodb://' + dbuser + ':' + dbpass + '@ds229008.mlab.com:29008/munzeefastermongodb';
@@ -65,27 +70,29 @@ app.get("/handle_oauth",function(request, response){
     // depricated: var id = request.param('id');
     var code = request.query.code;
     var state = request.query.state;
-    fetch( 'https://api.munzee.com/oauth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify( {
-        'clientid' : process.env.CLIENTID,
-        'client_secret' : process.env.CLIENTSECRET,
-        'grant_type' : 'authorization_code',
-        'code' : code,
-        'redirect_uri' : redirect_uri
-      })
-    }).then( function( response) {
+    var args = {
+        data: JSON.stringify( {
+          'clientid' : process.env.CLIENTID,
+          'client_secret' : process.env.CLIENTSECRET,
+          'grant_type' : 'authorization_code',
+          'code' : code,
+          'redirect_uri' : redirect_uri
+        }),
+        headers: { 'Content-Type': 'application/json',
+                   'Accept': 'application/json' }
+    };
+    client.post( 'https://api.munzee.com/oauth/login', args, function (data, response) {
       // We now receive an immediate response with the tokens
+        console.log( "Response: ");
         console.log( response);
-        var access_token = response.access_token;
-        var refresh_token = response.refresh_token;
-        var token_type = response.token_type;
-        var expires = response.expires;
-        var expires_in = response.expires_in;
+        console.log( "Data: ");
+        console.log( data);
+        var access_token = data.access_token;
+        var refresh_token = data.refresh_token;
+        var token_type = data.token_type;
+        var expires = data.expires;
+        var expires_in = data.expires_in;
+        // 'state' = username
         collection.update( { "user": state },
                            { $set: { "access_token":access_token,
                                      "refresh_token" : refresh_token,
@@ -94,7 +101,7 @@ app.get("/handle_oauth",function(request, response){
                                      "expires_in": expires_in
                                       }});
         res.redirect('/index.html');
-    }).catch( function( err) {
+    }).on( 'error', function( err) {
       console.log( 'Error: ' + err);
       return ;
     });
