@@ -1,9 +1,11 @@
 var express = require('express');
 var app = express();
 
-// rest client
-var Client = require('node-rest-client').Client;
-var client = new Client();
+// rest client => wrong ... it is a FORM request!!
+// var Client = require('node-rest-client').Client;
+// var client = new Client();
+
+var requestPost = require('request');
 
 const dbuser = process.env.MONGODB_USERNAME;
 const dbpass = process.env.MONGODB_PASSWORD;
@@ -74,27 +76,37 @@ app.get("/handle_oauth",function(request, response){
     console.log( response);
     var code = request.query.code;
     var state = request.query.state;
-    var args = {
-        data: "clientid="+process.env.CLIENTID +
-              "&client_secret="+process.env.CLIENTSECRET +
-              "&grant_type=authorization_code&code="+code +
-              "&redirect_uri=" + redirect_uri,
-        headers: { "Content-Type": "application/json",
-                   "Accept": "application/json" }
+    var myheaders = {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Accept": "application/json"
+    };
+    var options = {
+      url : 'https://api.munzee.com/oauth/login',
+      method : 'POST',
+      headers : myheaders,
+      form : {
+        "clientid" : process.env.CLIENTID,
+        "client_secret" : process.env.CLIENTSECRET,
+        "grant_type" : "authorization_code",
+        "code" + code,
+        "redirect_uri" : redirect_uri
+      }
     };
     console.log( "*** Calling POST with object");
-    console.log( args);
-    client.post( 'https://api.munzee.com/oauth/login', args, function (data, responsePost) {
+    console.log( options);
+    requestPost( options, function (error, responsePost, body) {
       // We now receive an immediate response with the tokens
         // console.log( "******* Response: ");
         // console.log( response);
-        console.log( "******* Data: ");
-        console.log( data);
-        var access_token = data.access_token;
-        var refresh_token = data.refresh_token;
-        var token_type = data.token_type;
-        var expires = data.expires;
-        var expires_in = data.expires_in;
+        console.log( "******* ResponsePost: ");
+        console.log( responsePost);
+        console.log( "******* Body: ");
+        console.log( body);
+        var access_token = body.access_token;
+        var refresh_token = body.refresh_token;
+        var token_type = body.token_type;
+        var expires = body.expires;
+        var expires_in = body.expires_in;
         // 'state' = username
         collection.update( { "user": state },
                            { $set: { "access_token":access_token,
@@ -104,7 +116,7 @@ app.get("/handle_oauth",function(request, response){
                                      "expires_in": expires_in
                                       }});
         response.redirect('/index.html');
-    }).on( 'error', function( err) {
+    }, function( err) {
       console.log( 'Error: ' + err);
       return ;
     });
