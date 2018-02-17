@@ -112,15 +112,16 @@ app.get("/handle_oauth",function(request, response){
         console.log( "******* Body: ");
         console.log( body);
         if (!error && response.statusCode === 200) {
+          var result = JSON.parse(body);
           console.log( '>>> data = ');
-          console.log( body.data);
+          console.log( result.data);
           console.log( '>>> token = ');
-          console.log( body.data.token); 
-          var access_token = body.data.token.access_token;
-          var refresh_token = body.data.token.refresh_token;
-          var token_type = body.data.token.token_type;
-          var expires = body.data.token.expires;
-          var expires_in = body.data.token.expires_in;
+          console.log( result.data.token);
+          var access_token = result.data.token.access_token;
+          var refresh_token = result.data.token.refresh_token;
+          var token_type = result.data.token.token_type;
+          var expires = result.data.token.expires;
+          var expires_in = result.data.token.expires_in;
           console.log( "Updating Mongodb with user: " + state);
           console.log( "Updating Mongodb with access_token: " + access_token);
           // 'state' = username
