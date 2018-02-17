@@ -81,6 +81,8 @@ app.get("/handle_oauth",function(request, response){
         headers: { "Content-Type": "application/json",
                    "Accept": "application/json" }
     };
+    console.log( "*** Calling POST with object");
+    console.log( args); 
     client.post( 'https://api.munzee.com/oauth/login', args, function (data, response) {
       // We now receive an immediate response with the tokens
         console.log( "******* Response: ");
@@ -119,7 +121,7 @@ function showAccounts() {
   });
 }
 function loginToMunzee( request, response) {
-  // TODO: de variabele zouden uit de security moeten komen. 
+  // TODO: de variabele zouden uit de security moeten komen.
   console.log( "Login to munzee... ");
   var clientid = process.env.CLIENTID;
   var munzeeRQ = "https://api.munzee.com/oauth?response_type=code&client_id=" +
