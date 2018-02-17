@@ -81,7 +81,7 @@ app.get("/handle_oauth",function(request, response){
     var state = request.query.state;
     console.log( '*** State = ' + state);
     if( state === null || state === undefined) {
-      state = 'munzeefaster'; 
+      state = 'munzeefaster';
     }
 
     var myform = {
@@ -117,6 +117,8 @@ app.get("/handle_oauth",function(request, response){
           var token_type = body.token_type;
           var expires = body.expires;
           var expires_in = body.expires_in;
+          console.log( "Updating Mongodb with user: " + state);
+          console.log( "Updating Mongodb with access_token: " + access_token); 
           // 'state' = username
           collection.update( { "user": state },
                              { $set: { "access_token":access_token,
