@@ -118,5 +118,5 @@ function loginToMunzee( request) {
         clientid + "&redirect_uri=" + redirect_uri + "&scope=read&state=" +
         request.session.accessToken;
   console.log( "MunzeeURL: " + munzeeRQ);
-  res.redirect(munzeeRQ);
+  request.redirect(munzeeRQ);
 }
