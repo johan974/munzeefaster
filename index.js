@@ -79,6 +79,10 @@ app.get("/handle_oauth",function(request, response){
     console.log( response);
     var myCode = request.query.code;
     var state = request.query.state;
+    console.log( '*** State = ' + state);
+    if( state === null || state === undefined) {
+      state = 'munzeefaster'; 
+    }
 
     var myform = {
       client_id : process.env.CLIENTID,
