@@ -7,6 +7,7 @@ var app = express();
 
 // http://samwize.com/2013/08/31/simple-http-get-slash-post-request-in-node-dot-js/
 var requestPost = require('request');
+var querystring = require('querystring');
 
 const dbuser = process.env.MONGODB_USERNAME;
 const dbpass = process.env.MONGODB_PASSWORD;
@@ -75,27 +76,29 @@ app.get("/handle_oauth",function(request, response){
     console.log( request);
     console.log( '***** Handle oauth: response object')
     console.log( response);
-    var code = request.query.code;
+    var myCode = request.query.code;
     var state = request.query.state;
-    var myheaders = {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "Accept": "application/json"
+
+    var myform = {
+      clientid : process.env.CLIENTID,
+      client_secret : process.env.CLIENTSECRET,
+      grant_type : 'authorization_code',
+      code : myCode,
+      redirect_uri : redirect_uri
     };
-    var options = {
-      url : 'https://api.munzee.com/oauth/login',
-      method : 'POST',
-      headers : myheaders,
-      form : {
-        "clientid" : process.env.CLIENTID,
-        "client_secret" : process.env.CLIENTSECRET,
-        "grant_type" : "authorization_code",
-        "code" + code,
-        "redirect_uri" : redirect_uri
-      }
-    };
+    var formData = querystring.stringify(myform);
+    var contentLength = formData.length;
     console.log( "*** Calling POST with object");
-    console.log( options);
-    requestPost( options, function (error, responsePost, body) {
+    console.log( myform);
+    requestPost( {
+      headers : {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json'
+      },
+      uri : 'https://api.munzee.com/oauth/login',
+      body: formData,
+      method : 'POST'
+    }, function( error, responsePost, body) {
       // We now receive an immediate response with the tokens
         // console.log( "******* Response: ");
         // console.log( response);
@@ -103,7 +106,7 @@ app.get("/handle_oauth",function(request, response){
         console.log( responsePost);
         console.log( "******* Body: ");
         console.log( body);
-        if (!error && response.statusCode == 200) {
+        if (!error && response.statusCode === 200) {
           var access_token = body.access_token;
           var refresh_token = body.refresh_token;
           var token_type = body.token_type;
@@ -118,7 +121,7 @@ app.get("/handle_oauth",function(request, response){
                                        "expires_in": expires_in
                                         }});
         } else {
-          console.log( "Error: " + error); 
+          console.log( "Error: " + error);
         }
         response.redirect('/index.html');
     });
