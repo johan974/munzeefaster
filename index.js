@@ -111,12 +111,12 @@ function showAccounts() {
     console.log( "ShowingAccounts() the accounts --");
   });
 }
-function loginToMunzee( request) {
+function loginToMunzee( request, response) {
   console.log( "Login to munzee... ");
   var clientid = process.env.CLIENTID;
   var munzeeRQ = "https://api.munzee.com/oauth?response_type=code&client_id=" +
         clientid + "&redirect_uri=" + redirect_uri + "&scope=read&state=" +
         request.session.accessToken;
   console.log( "MunzeeURL: " + munzeeRQ);
-  request.redirect(munzeeRQ);
+  response.redirect(munzeeRQ);
 }
