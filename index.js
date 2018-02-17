@@ -107,18 +107,22 @@ app.get("/handle_oauth",function(request, response){
       // We now receive an immediate response with the tokens
         // console.log( "******* Response: ");
         // console.log( response);
-        console.log( "******* ResponsePost: ");
-        console.log( responsePost);
+        // console.log( "******* ResponsePost: ");
+        // console.log( responsePost);
         console.log( "******* Body: ");
         console.log( body);
         if (!error && response.statusCode === 200) {
-          var access_token = body.access_token;
-          var refresh_token = body.refresh_token;
-          var token_type = body.token_type;
-          var expires = body.expires;
-          var expires_in = body.expires_in;
+          console.log( '>>> data = ');
+          conolse.log( body.data);
+          console.log( '>>> token = ');
+          conolse.log( body.data.token); 
+          var access_token = body.data.token.access_token;
+          var refresh_token = body.data.token.refresh_token;
+          var token_type = body.data.token.token_type;
+          var expires = body.data.token.expires;
+          var expires_in = body.data.token.expires_in;
           console.log( "Updating Mongodb with user: " + state);
-          console.log( "Updating Mongodb with access_token: " + access_token); 
+          console.log( "Updating Mongodb with access_token: " + access_token);
           // 'state' = username
           collection.update( { "user": state },
                              { $set: { "access_token":access_token,
