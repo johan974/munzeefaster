@@ -113,9 +113,9 @@ app.get("/handle_oauth",function(request, response){
         console.log( body);
         if (!error && response.statusCode === 200) {
           console.log( '>>> data = ');
-          conolse.log( body.data);
+          console.log( body.data);
           console.log( '>>> token = ');
-          conolse.log( body.data.token); 
+          console.log( body.data.token); 
           var access_token = body.data.token.access_token;
           var refresh_token = body.data.token.refresh_token;
           var token_type = body.data.token.token_type;
