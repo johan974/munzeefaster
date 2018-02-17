@@ -119,6 +119,7 @@ function showAccounts() {
   });
 }
 function loginToMunzee( request, response) {
+  // TODO: de variabele zouden uit de security moeten komen. 
   console.log( "Login to munzee... ");
   var clientid = process.env.CLIENTID;
   var munzeeRQ = "https://api.munzee.com/oauth?response_type=code&client_id=" +
