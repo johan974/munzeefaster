@@ -68,6 +68,10 @@ app.get("/munzeefaster",function(request, response){
 // code=JkEQQmjgbPavmqtJtbYEyAD7lYAMYLKBEZhlfeTn&state=yourinfo
 app.get("/handle_oauth",function(request, response){
     // depricated: var id = request.param('id');
+    console.log( '***** Handle oauth: request object')
+    console.log( request);
+    console.log( '***** Handle oauth: response object')
+    console.log( response);
     var code = request.query.code;
     var state = request.query.state;
     var args = {
