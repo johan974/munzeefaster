@@ -82,11 +82,11 @@ app.get("/handle_oauth",function(request, response){
                    "Accept": "application/json" }
     };
     console.log( "*** Calling POST with object");
-    console.log( args); 
+    console.log( args);
     client.post( 'https://api.munzee.com/oauth/login', args, function (data, response) {
       // We now receive an immediate response with the tokens
-        console.log( "******* Response: ");
-        console.log( response);
+        // console.log( "******* Response: ");
+        // console.log( response);
         console.log( "******* Data: ");
         console.log( data);
         var access_token = data.access_token;
