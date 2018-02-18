@@ -33,6 +33,7 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(bodyParser.json());
+
 app.post("/login", function (req, res, next) {
     collection.findOne( { "user" : req.body.username},{},function(e,doc){
       if( doc !== undefined && doc != null && req.body.username === doc.user &&
@@ -49,7 +50,10 @@ app.post("/login", function (req, res, next) {
       }
     });
 });
-app.use(function(req, res, next) {       // Catches access to all other pages
+
+app.use(function(req, res, next) {
+    console.log( '**GENERAL: session.logginin    = ' + req.session.loggingin);     // Catches access to all other pages
+    console.log( '**GENERAL: session.accesstoken = ' + req.session.accessToken);     // Catches access to all other pages
     if( req.session.loggingin !== null && req.session.loggingin == false &&
         !req.session.accessToken) {       // requiring a valid access token
         console.log( 'Empty access token, redirect to login');
