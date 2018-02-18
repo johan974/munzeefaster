@@ -85,6 +85,7 @@ app.use(function(req, res, next) {
     }
   } else {
     console.log( '*** GENERAL: req.url = ' +  req.url + ', username = ' + req.body.usernam);
+    // Via next() ga je verder met routing !!!!!!!
     next();
   }
 });
@@ -107,7 +108,6 @@ app.post("/login", function (req, res, next) {
           req.session.accesstoken = doc.access_token;
           req.session.loggingin = false;
           res.redirect('/index.html');
-          next();
         }
       } else {
         console.log( 'Invalid username or password');
@@ -115,7 +115,6 @@ app.post("/login", function (req, res, next) {
         req.session.accesstoken = null;
         req.session.loggingin = true;
         res.redirect('/login.html');
-        next();
       }
     });
 });
@@ -126,7 +125,6 @@ app.use( '/logout', function(req, res, next) {
   req.session.username = null;
   req.session.loggingin = true;
   res.redirect('/login.html');
-  next();
 });
 
 app.get( "/munzeefaster",function(request, response) {
@@ -177,22 +175,24 @@ function loginToMunzee( username, request, response) {
 
 function getTokens( typeOfToken, username, myCode, request, response) {
   console.log( "*** getTokens: username = " + username + ", typeOftoken  = " + typeOfToken + ", code = " + myCode);
-  var codeType;
-  var codeParameter;
+  var myform;
   if( typeOfToken === 'authorization_code') {
-    codeType = 'code';
-    codeParameter = myCode;
+    myform = {
+      client_id : process.env.CLIENTID,
+      client_secret : process.env.CLIENTSECRET,
+      grant_type : typeOfToken,
+      code : myCode,
+      redirect_uri : redirect_uri
+    };
   } else {
-    codeType = 'refresh_token';
-    codeParameter = myCode;
+    myform = {
+      client_id : process.env.CLIENTID,
+      client_secret : process.env.CLIENTSECRET,
+      grant_type : typeOfToken,
+      refresh_token : myCode,
+      redirect_uri : redirect_uri
+    };
   }
-  var myform = {
-    client_id : process.env.CLIENTID,
-    client_secret : process.env.CLIENTSECRET,
-    grant_type : typeOfToken,
-    codeType : codeParameter,
-    redirect_uri : redirect_uri
-  };
   var formData = querystring.stringify(myform);
   var contentLength = formData.length;
   console.log( "*** Calling POST with object");
