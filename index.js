@@ -56,7 +56,7 @@ app.use(function(req, res, next) {
         // Was the last action of the user > 8 hours?
         var lastVisitLongerThan8hoursAgo = ((new Date).getTime()) - ( 8 * 60 * 60000);
         var lastVisit = req.session.lastvisit;
-        if( lastVisit === undefinied || lastVisit === null || lastVisit < lastVisitLongerThan8hoursAgo) {
+        if( lastVisit === undefined || lastVisit === null || lastVisit < lastVisitLongerThan8hoursAgo) {
           // Will a token expire?
           console.log( "GENERAL: finding use in db ... " + req.session.username);
           collection.findOne( { "user" : usernameLastVisit},{},function(error,doc){
