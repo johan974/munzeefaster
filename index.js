@@ -65,43 +65,42 @@ app.post("/login", function (req, res, next) {
 });
 
 app.use(function(req, res, next) {
-    if( req.session.loggingin === true) {
-      return ;
-    }
-    // Is there a username in the session cookie? No, then navigate to the login page
-    console.log( '*** GENERAL: session.user = ' +  req.session.username + ', session.token = ' + req.session.accesstoken);
-    var usernameLastVisit = req.session.username;
-    if( usernameLastVisit === undefined || usernameLastVisit === null) {
-      req.session.accesstoken = null;
-      req.session.loggingin = true;
-      res.redirect('/login.html');
-      return ;
-    }
-    // Was the last action of the user > 8 hours? The check the tokens
-    var lastVisitLongerThan8hoursAgo = ((new Date).getTime()) - ( 8 * 60 * 60000);
-    var lastVisit = req.session.lastvisit;
-    if( lastVisit === undefinied || lastVisit === null || lastVisit < lastVisitLongerThan8hoursAgo) {
-      // find the user
-      collection.findOne( { "user" : usernameLastVisit},{},function(error,doc){
-        if( doc === undefined || doc === null) {
-          req.session.accesstoken = null;
-          req.session.loggingin = true;
-          res.redirect('/login.html');
-          return ;
-        }
-        // will the access token expiry witin 8 hours?
-        var nowPlus8Hours = (((new Date).getTime()) + (8*60*60000) );
-        if( doc.expires < nowPlus8Hours) {
-          if( doc.auth_expires < nowPlus8Hours) {
-            loginToMunzee( usernameLastVisit, req, res);
-            return ;
-          } else {
-            refreshAccessToken( usernameLastVisit, doc.refresh_token, req, res);
+    if( req.session.loggingin === false) {
+      // Is there a username in the session cookie? No, then navigate to the login page
+      console.log( '*** GENERAL: session.user = ' +  req.session.username + ', session.token = ' + req.session.accesstoken);
+      var usernameLastVisit = req.session.username;
+      if( usernameLastVisit === undefined || usernameLastVisit === null) {
+        req.session.accesstoken = null;
+        req.session.loggingin = true;
+        res.redirect('/login.html');
+        return ;
+      }
+      // Was the last action of the user > 8 hours? The check the tokens
+      var lastVisitLongerThan8hoursAgo = ((new Date).getTime()) - ( 8 * 60 * 60000);
+      var lastVisit = req.session.lastvisit;
+      if( lastVisit === undefinied || lastVisit === null || lastVisit < lastVisitLongerThan8hoursAgo) {
+        // find the user
+        collection.findOne( { "user" : usernameLastVisit},{},function(error,doc){
+          if( doc === undefined || doc === null) {
+            req.session.accesstoken = null;
+            req.session.loggingin = true;
+            res.redirect('/login.html');
             return ;
           }
-        }
-    });
-    req.session.lastvisit = ((new Date).getTime());
+          // will the access token expiry witin 8 hours?
+          var nowPlus8Hours = (((new Date).getTime()) + (8*60*60000) );
+          if( doc.expires < nowPlus8Hours) {
+            if( doc.auth_expires < nowPlus8Hours) {
+              loginToMunzee( usernameLastVisit, req, res);
+              return ;
+            } else {
+              refreshAccessToken( usernameLastVisit, doc.refresh_token, req, res);
+              return ;
+            }
+          }
+      });
+      req.session.lastvisit = ((new Date).getTime());
+    }
   }
 });
 
