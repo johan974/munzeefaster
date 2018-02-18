@@ -33,41 +33,12 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 
-app.post("/login", function (req, res, next) {
-    console.log( '*** /login: body.user = ' +  req.body.usernam);
-    collection.findOne( { "user" : req.body.username},{},function(e,doc) {
-      if( doc !== undefined && doc !== null && req.body.username === doc.user &&
-          req.body.password === doc.pw) {
-        // Valid (re)login
-        // Is there a token OR is it expired?
-        var nowPlus8Hours = (((new Date).getTime()) + (8*60*60000) );
-        if( doc.auth_expires < nowPlus8Hours) {
-          loginToMunzee( req.body.username, req, res);
-          return ;
-        }
-        if( doc.expires < nowPlus8Hours) {
-          refreshAccessToken( req.body.username, doc.refresh_token, req, res);
-          return;
-        }
-        req.session.username = req.body.username;
-        req.session.accesstoken = doc.access_token;
-        req.session.loggingin = false;
-        res.redirect('/index.html');
-        return;
-      } else {
-        console.log( 'Invalid username or password');
-        req.session.username = null;
-        req.session.accesstoken = null;
-        res.redirect('/login.html');
-        return;
-      }
-    });
-});
-
+// General FILTER -- if not logging in ... do some checking
 app.use(function(req, res, next) {
+    console.log( '*** GENERAL: session.user = ' +  req.session.username + ', session.token = ' + req.session.accesstoken);
     if( req.session.loggingin === false) {
       // Is there a username in the session cookie? No, then navigate to the login page
-      console.log( '*** GENERAL: session.user = ' +  req.session.username + ', session.token = ' + req.session.accesstoken);
+      console.log( '*** GENERAL: no.login session.user = ' +  req.session.username + ', session.token = ' + req.session.accesstoken);
       var usernameLastVisit = req.session.username;
       if( usernameLastVisit === undefined || usernameLastVisit === null) {
         req.session.accesstoken = null;
@@ -80,6 +51,7 @@ app.use(function(req, res, next) {
       var lastVisit = req.session.lastvisit;
       if( lastVisit === undefinied || lastVisit === null || lastVisit < lastVisitLongerThan8hoursAgo) {
         // find the user
+        console.log( "GENERAL: finding use in db ... " + req.session.username);
         collection.findOne( { "user" : usernameLastVisit},{},function(error,doc){
           if( doc === undefined || doc === null) {
             req.session.accesstoken = null;
@@ -92,16 +64,42 @@ app.use(function(req, res, next) {
           if( doc.expires < nowPlus8Hours) {
             if( doc.auth_expires < nowPlus8Hours) {
               loginToMunzee( usernameLastVisit, req, res);
-              return ;
             } else {
               refreshAccessToken( usernameLastVisit, doc.refresh_token, req, res);
-              return ;
             }
           }
       });
       req.session.lastvisit = ((new Date).getTime());
     }
   }
+});
+
+app.post("/login", function (req, res, next) {
+    console.log( '*** /login: body.user = ' +  req.body.usernam);
+    collection.findOne( { "user" : req.body.username},{},function(e,doc) {
+      if( doc !== undefined && doc !== null && req.body.username === doc.user &&
+          req.body.password === doc.pw) {
+        console.log( '*** LOGGING IN ');
+        // Valid (re)login
+        // Is there a token OR is it expired?
+        var nowPlus8Hours = (((new Date).getTime()) + (8*60*60000) );
+        if( doc.auth_expires < nowPlus8Hours) {
+          loginToMunzee( req.body.username, req, res);
+        } else if( doc.expires < nowPlus8Hours) {
+            refreshAccessToken( req.body.username, doc.refresh_token, req, res);
+        } else {
+          req.session.username = req.body.username;
+          req.session.accesstoken = doc.access_token;
+          req.session.loggingin = false;
+          res.redirect('/index.html');
+        }
+      } else {
+        console.log( 'Invalid username or password');
+        req.session.username = null;
+        req.session.accesstoken = null;
+        res.redirect('/login.html');
+      }
+    });
 });
 
 app.use( '/logout', function(req, res, next) {
@@ -131,7 +129,6 @@ app.get("/refreshtoken",function(req, res) {
       return ;
     }
     refreshAccessToken( usernameLastVisit, doc.refresh_token, req, res);
-    return ;
   });
 });
 // code=JkEQQmjgbPavmqtJtbYEyAD7lYAMYLKBEZhlfeTn&state=yourinfo
