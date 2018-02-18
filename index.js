@@ -21,11 +21,12 @@ var db = monk(URL);
 var collection = db.get('accounts');
 var redirect_uri = "https://munzeefaster.herokuapp.com/handle_oauth";
 
-//  session authentication
+//  session cookie authentication
 app.use(session({
     secret: '2C44-4D44-WppQ38S',
     cookie: { maxAge: 6000000 }
 }));
+
 // Authentication and Authorization Middleware
 app.use(bodyParser.urlencoded({
     extended: true
@@ -34,15 +35,28 @@ app.use(bodyParser.json());
 
 app.post("/login", function (req, res, next) {
     collection.findOne( { "user" : req.body.username},{},function(e,doc){
-      if( doc !== undefined && doc != null && req.body.username === doc.user &&
+      if( doc !== undefined && doc !== null && req.body.username === doc.user &&
           req.body.password === doc.pw) {
-        req.session.accessToken = req.body.username;
+        // Valid (re)login
+        // Is there a token OR is it expired?
+        var nowPlus8Hours = (((new Date).getTime()) + (8*60*60000) );
+        if( doc.auth_expires < nowPlus8Hours) {
+          loginToMunzee( req.body.username, req, res);
+          return ;
+        }
+        if( doc.expires < nowPlus8Hours) {
+          refreshAccessToken( req.body.username, doc.refresh_token, req, res) {
+          return;
+        }
+        req.session.username = req.body.username;
+        req.session.accesstoken = doc.access_token;
         req.session.loggingin = false;
         res.redirect('/index.html');
-        next();
         return;
       } else {
         console.log( 'Invalid username or password');
+        req.session.username = null;
+        req.session.accesstoken = null;
         res.redirect('/login.html');
         return;
       }
@@ -50,76 +64,146 @@ app.post("/login", function (req, res, next) {
 });
 
 app.use(function(req, res, next) {
-    // console.log( '**GENERAL: session.logginin    = ' + req.session.loggingin);     // Catches access to all other pages
-    // console.log( '**GENERAL: session.accesstoken = ' + req.session.accessToken);     // Catches access to all other pages
-    if( req.session.loggingin !== null && req.session.loggingin == false &&
-        !req.session.accessToken) {       // requiring a valid access token
-        console.log( 'Empty access token, redirect to login');
-        res.redirect('/login.html');
-        res.session.loggingin = true;
-        next();
-    } else {
-        next();
+    // Is there a username in the session cookie? No, then navigate to the login page
+    var usernameLastVisit = req.session.username;
+    if( usernameLastVisit === undefined || usernameLastVisit === null) {
+      req.session.accesstoken = null;
+      req.session.loggingin = true;
+      res.redirect('/login.html');
+      return ;
     }
+    // Was the last action of the user > 8 hours? The check the tokens
+    var lastVisitLongerThan8hoursAgo = ((new Date).getTime()) - ( 8 * 60 * 60000);
+    var lastVisit = req.session.lastvisit;
+    if( lastVisit === undefinied || lastVisit === null || lastVisit < lastVisitLongerThan8hoursAgo) {
+      // find the user
+      collection.findOne( { "user" : usernameLastVisit},{},function(error,doc){
+        if( doc === undefined || doc === null) {
+          req.session.accesstoken = null;
+          req.session.loggingin = true;
+          res.redirect('/login.html');
+          return ;
+        }
+        // will the access token expiry witin 8 hours?
+        var nowPlus8Hours = (((new Date).getTime()) + (8*60*60000) );
+        if( doc.expires < nowPlus8Hours) {
+          if( doc.auth_expires < nowPlus8Hours) {
+            loginToMunzee( usernameLastVisit, req, res);
+            return ;
+          } else {
+            refreshAccessToken( usernameLastVisit, doc.refresh_token, req, res);
+            return ;
+          }
+        }
+    }
+    req.session.lastvisit = ((new Date).getTime());
 });
+
 app.use( '/logout', function(req, res, next) {
-  req.session.accessToken = null;
+  req.session.accesstoken = null;
+  req.session.username = null;
   req.session.loggingin = true;
   res.redirect('/login.html');
   next();
 });
 
 app.get("/munzeefaster",function(request, response){
-    loginToMunzee( request, response);
+    loginToMunzee( req.session.username, request, response);
+});
+
+app.get("/refreshtoken",function(request, response){
+  var usernameLastVisit = req.session.username;
+  collection.findOne( { "user" : usernameLastVisit},{},function(error,doc){
+    if( doc === undefined || doc === null) {
+      req.session.accesstoken = null;
+      req.session.loggingin = true;
+      res.redirect('/login.html');
+      return ;
+    }
+    refreshAccessToken( usernameLastVisit, doc.refresh_token, req, res);
+    return ;
+  }
 });
 // code=JkEQQmjgbPavmqtJtbYEyAD7lYAMYLKBEZhlfeTn&state=yourinfo
 app.get("/handle_oauth",function(request, response){
     // depricated: var id = request.param('id');
     var myCode = request.query.code;
-    var state = request.query.state;
-    console.log( '*** State = ' + state);
-    if( state === null || state === undefined) {
-      state = 'munzeefaster';
+    var stateUsername = request.query.state;
+    console.log( '*** State = ' + stateUsername);
+    if( stateUsername === null || stateUsername === undefined) {
+      stateUsername = 'munzeefaster';
     }
+    getTokens( 'authorization_code', stateUsername, myCode, request, response);
+  });
 
-    var myform = {
-      client_id : process.env.CLIENTID,
-      client_secret : process.env.CLIENTSECRET,
-      grant_type : 'authorization_code',
-      code : myCode,
-      redirect_uri : redirect_uri
-    };
-    var formData = querystring.stringify(myform);
-    var contentLength = formData.length;
-    console.log( "*** Calling POST with object");
-    console.log( myform);
-    requestPost( {
-      headers : {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'application/json'
-      },
-      uri : 'https://api.munzee.com/oauth/login',
-      body: formData,
-      method : 'POST'
-    }, function( error, responsePost, body) {
-        console.log( "******* Body: ");
-        console.log( body);
-        if (!error && response.statusCode === 200) {
-          var result = JSON.parse(body);
-          console.log( '>>> data = ');
-          console.log( result.data);
-          console.log( '>>> token = ');
-          console.log( result.data.token);
-          var access_token = result.data.token.access_token;
-          var refresh_token = result.data.token.refresh_token;
-          var token_type = result.data.token.token_type;
-          var expires = result.data.token.expires;
-          var expires_in = result.data.token.expires_in;
-          console.log( "Updating Mongodb with user: " + state);
-          console.log( "Updating Mongodb with access_token: " + access_token);
+app.use(express.static( __dirname + '/public'));
+var port = process.env.PORT || 8000;
+app.listen(port);
 
+// function showAccounts() {
+//   console.log( "ShowingAccounts() accounts --");
+//   collection.find({},{},function(e,docs){
+//     console.log(docs);
+//     console.log( "ShowingAccounts() the accounts --");
+//   });
+// }
+function loginToMunzee( username, request, response) {
+  // TODO: de variabele zouden uit de security moeten komen.
+  console.log( "Login to munzee... ");
+  var clientid = process.env.CLIENTID;
+  var munzeeRQ = "https://api.munzee.com/oauth?response_type=code&client_id=" +
+        clientid + "&redirect_uri=" + redirect_uri + "&scope=read&state=" + username;
+  console.log( "*** LOGIN: " + munzeeRQ);
+  response.redirect( munzeeRQ);
+}
+
+function getTokens( typeOfToken, username, myCode, request, response) {
+  var codeType;
+  var codeParameter;
+  if( typeOfToken === 'authorization_code') {
+    codeType = 'code';
+    codeParameter = myCode;
+  } else {
+    codeType = 'refresh_token';
+    codeParameter = myCode;
+  }
+  var myform = {
+    client_id : process.env.CLIENTID,
+    client_secret : process.env.CLIENTSECRET,
+    grant_type : typeOfToken,
+    codeType : codeParameter,
+    redirect_uri : redirect_uri
+  };
+  var formData = querystring.stringify(myform);
+  var contentLength = formData.length;
+  console.log( "*** Calling POST with object");
+  console.log( myform);
+  requestPost( {
+    headers : {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Accept': 'application/json'
+    },
+    uri : 'https://api.munzee.com/oauth/login',
+    body: formData,
+    method : 'POST'
+  }, function( error, responsePost, body) {
+      console.log( "******* Body: ");
+      console.log( body);
+      if (!error && response.statusCode === 200) {
+        var result = JSON.parse(body);
+        console.log( '>>> data = ');
+        console.log( result.data);
+        console.log( '>>> token = ');
+        console.log( result.data.token);
+        var access_token = result.data.token.access_token;
+        var refresh_token = result.data.token.refresh_token;
+        var token_type = result.data.token.token_type;
+        var expires = result.data.token.expires;
+        var expires_in = result.data.token.expires_in;
+        console.log( "Updating Mongodb with user: " + state);
+        console.log( "Updating Mongodb with access_token: " + access_token);
+        if( typeOfToken === 'authorization_code') {
           var auth_expires = ((new Date).getTime()) + (90*24*60*60000);
-
           // 'state' = username
           collection.update( { "user": state },
                              { $set: { "access_token":access_token,
@@ -130,29 +214,22 @@ app.get("/handle_oauth",function(request, response){
                                        "auth_expires" : auth_expires
                                         }});
         } else {
-          console.log( "Error: " + error);
+          collection.update( { "user": state },
+                             { $set: { "access_token":access_token,
+                                       "refresh_token" : refresh_token,
+                                       "token_type": token_type,
+                                       "expires": expires,
+                                       "expires_in": expires_in
+                                        }});
         }
-        response.redirect('/index.html');
-    });
-});
-
-app.use(express.static( __dirname + '/public'));
-var port = process.env.PORT || 8000;
-app.listen(port);
-
-function showAccounts() {
-  console.log( "ShowingAccounts() accounts --");
-  collection.find({},{},function(e,docs){
-    console.log(docs);
-    console.log( "ShowingAccounts() the accounts --");
+        request.session.accesstoken = access_token;
+      } else {
+        console.log( "Error: " + error);
+      }
+      response.redirect('/index.html');
   });
 }
-function loginToMunzee( request, response) {
-  // TODO: de variabele zouden uit de security moeten komen.
-  console.log( "Login to munzee... ");
-  var clientid = process.env.CLIENTID;
-  var munzeeRQ = "https://api.munzee.com/oauth?response_type=code&client_id=" +
-        clientid + "&redirect_uri=" + redirect_uri + "&scope=read&state=" + req.session.accessToken;
-  console.log( "*** MunzeeURL: " + munzeeRQ);
-  response.redirect(munzeeRQ);
+
+function refreshAccessToken( username, refreshToken, request, response) {
+   getTokens( 'refresh_token', username, refreshToken, request, response);
 }
