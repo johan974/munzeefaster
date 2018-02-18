@@ -96,7 +96,7 @@ app.post("/login", function (req, res, next) {
         // Valid (re)login
         // Is there a token OR is it expired?
         var nowPlus8Hours = (((new Date).getTime()) + (8*60*60000) );
-        if( doc.auth_expires < nowPlus8Hours) {
+        if( doc.auth_expires < nowPlus8Hours || doc.refresh_token === null || doc.refresh_token === undefined) {
           loginToMunzee( req.body.username, req, res);
         } else if( doc.expires < nowPlus8Hours) {
           refreshAccessToken( req.body.username, doc.refresh_token, req, res);
