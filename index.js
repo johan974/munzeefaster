@@ -237,7 +237,6 @@ function getTokens( typeOfToken, username, myCode, request, response) {
           console.log( "Update refresh code: ");
           collection.update( { "user": username },
                              { $set: { "access_token":access_token,
-                                       "refresh_token" : refresh_token,
                                        "token_type": token_type,
                                        "expires": expires,
                                        "expires_in": expires_in
