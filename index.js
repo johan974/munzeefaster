@@ -107,9 +107,11 @@ app.post("/login", function (req, res, next) {
         req.session.username = req.body.username;
         req.session.loggingin = false;
         var nowPlus8Hours = (((new Date).getTime()) + (8*60*60000) );
+        console.log( 'Now plus 8 hours: ' + nowPlus8Hours);
         if( doc.auth_expires < nowPlus8Hours || doc.refresh_token === null || doc.refresh_token === undefined) {
           loginToMunzee( req.body.username, req, res);
         } else if( doc.expires < nowPlus8Hours) {
+          console.log( 'Doc.expires ' + doc.expires + " < " + nowPlus8Hours);
           refreshAccessToken( req.body.username, doc.refresh_token, req, res);
         } else {
           req.session.accesstoken = doc.access_token;
