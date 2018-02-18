@@ -9,7 +9,6 @@ var app = express();
 var requestPost = require('request');
 var querystring = require('querystring');
 
-
 const dbuser = process.env.MONGODB_USERNAME;
 const dbpass = process.env.MONGODB_PASSWORD;
 var URL = 'mongodb://' + dbuser + ':' + dbpass + '@ds229008.mlab.com:29008/munzeefastermongodb';
@@ -51,8 +50,8 @@ app.post("/login", function (req, res, next) {
 });
 
 app.use(function(req, res, next) {
-    console.log( '**GENERAL: session.logginin    = ' + req.session.loggingin);     // Catches access to all other pages
-    console.log( '**GENERAL: session.accesstoken = ' + req.session.accessToken);     // Catches access to all other pages
+    // console.log( '**GENERAL: session.logginin    = ' + req.session.loggingin);     // Catches access to all other pages
+    // console.log( '**GENERAL: session.accesstoken = ' + req.session.accessToken);     // Catches access to all other pages
     if( req.session.loggingin !== null && req.session.loggingin == false &&
         !req.session.accessToken) {       // requiring a valid access token
         console.log( 'Empty access token, redirect to login');
@@ -76,10 +75,6 @@ app.get("/munzeefaster",function(request, response){
 // code=JkEQQmjgbPavmqtJtbYEyAD7lYAMYLKBEZhlfeTn&state=yourinfo
 app.get("/handle_oauth",function(request, response){
     // depricated: var id = request.param('id');
-    console.log( '***** Handle oauth: request object')
-    console.log( request);
-    console.log( '***** Handle oauth: response object')
-    console.log( response);
     var myCode = request.query.code;
     var state = request.query.state;
     console.log( '*** State = ' + state);
@@ -107,11 +102,6 @@ app.get("/handle_oauth",function(request, response){
       body: formData,
       method : 'POST'
     }, function( error, responsePost, body) {
-      // We now receive an immediate response with the tokens
-        // console.log( "******* Response: ");
-        // console.log( response);
-        // console.log( "******* ResponsePost: ");
-        // console.log( responsePost);
         console.log( "******* Body: ");
         console.log( body);
         if (!error && response.statusCode === 200) {
@@ -127,13 +117,17 @@ app.get("/handle_oauth",function(request, response){
           var expires_in = result.data.token.expires_in;
           console.log( "Updating Mongodb with user: " + state);
           console.log( "Updating Mongodb with access_token: " + access_token);
+
+          var auth_expires = ((new Date).getTime()) + (90*24*60*60000);
+
           // 'state' = username
           collection.update( { "user": state },
                              { $set: { "access_token":access_token,
                                        "refresh_token" : refresh_token,
                                        "token_type": token_type,
                                        "expires": expires,
-                                       "expires_in": expires_in
+                                       "expires_in": expires_in,
+                                       "auth_expires" : auth_expires
                                         }});
         } else {
           console.log( "Error: " + error);
@@ -158,7 +152,7 @@ function loginToMunzee( request, response) {
   console.log( "Login to munzee... ");
   var clientid = process.env.CLIENTID;
   var munzeeRQ = "https://api.munzee.com/oauth?response_type=code&client_id=" +
-        clientid + "&redirect_uri=" + redirect_uri + "&scope=read&state=munzeefaster";
-  console.log( "MunzeeURL: " + munzeeRQ);
+        clientid + "&redirect_uri=" + redirect_uri + "&scope=read&state=" + req.session.accessToken;
+  console.log( "*** MunzeeURL: " + munzeeRQ);
   response.redirect(munzeeRQ);
 }
