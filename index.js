@@ -34,6 +34,7 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 
 app.post("/login", function (req, res, next) {
+    console.log( '*** /login: body.user = ' +  req.body.usernam);
     collection.findOne( { "user" : req.body.username},{},function(e,doc){
       if( doc !== undefined && doc !== null && req.body.username === doc.user &&
           req.body.password === doc.pw) {
@@ -64,7 +65,11 @@ app.post("/login", function (req, res, next) {
 });
 
 app.use(function(req, res, next) {
+    if( req.session.loggingin === true) {
+      return ;
+    }
     // Is there a username in the session cookie? No, then navigate to the login page
+    console.log( '*** GENERAL: session.user = ' +  req.session.username + ', session.token = ' + req.session.accesstoken);
     var usernameLastVisit = req.session.username;
     if( usernameLastVisit === undefined || usernameLastVisit === null) {
       req.session.accesstoken = null;
@@ -101,6 +106,7 @@ app.use(function(req, res, next) {
 });
 
 app.use( '/logout', function(req, res, next) {
+  console.log( '*** /logout: session.user = ' +  req.session.username + ', session.token = ' + req.session.accesstoken);
   req.session.accesstoken = null;
   req.session.username = null;
   req.session.loggingin = true;
@@ -109,10 +115,12 @@ app.use( '/logout', function(req, res, next) {
 });
 
 app.get("/munzeefaster",function(request, response) {
+    console.log( '*** /munzeefaster: session.user = ' +  req.session.username + ', session.token = ' + req.session.accesstoken);
     loginToMunzee( req.session.username, request, response);
 });
 
 app.get("/refreshtoken",function(request, response) {
+  console.log( '*** /refreshtoken: session.user = ' +  req.session.username + ', session.token = ' + req.session.accesstoken);
   var usernameLastVisit = req.session.username;
   collection.findOne( { "user" : usernameLastVisit},{},function(error,doc){
     console.log( '*** Refresh token');
@@ -129,6 +137,7 @@ app.get("/refreshtoken",function(request, response) {
 });
 // code=JkEQQmjgbPavmqtJtbYEyAD7lYAMYLKBEZhlfeTn&state=yourinfo
 app.get("/handle_oauth",function(request, response){
+    console.log( '*** /handle_oauth: query.code = ' +  request.query.code + ', query.state = ' + request.query.state);
     // depricated: var id = request.param('id');
     var myCode = request.query.code;
     var stateUsername = request.query.state;
@@ -151,8 +160,8 @@ app.listen(port);
 //   });
 // }
 function loginToMunzee( username, request, response) {
+  console.log( "*** loginToMunzee: username = " + username);
   // TODO: de variabele zouden uit de security moeten komen.
-  console.log( "Login to munzee... ");
   var clientid = process.env.CLIENTID;
   var munzeeRQ = "https://api.munzee.com/oauth?response_type=code&client_id=" +
         clientid + "&redirect_uri=" + redirect_uri + "&scope=read&state=" + username;
@@ -161,6 +170,8 @@ function loginToMunzee( username, request, response) {
 }
 
 function getTokens( typeOfToken, username, myCode, request, response) {
+  console.log( "*** getTokens: username = " + username + ", typeOftoken  = " + typeOfToken +
+               ", code = " + myCode);
   var codeType;
   var codeParameter;
   if( typeOfToken === 'authorization_code') {
@@ -208,6 +219,7 @@ function getTokens( typeOfToken, username, myCode, request, response) {
         if( typeOfToken === 'authorization_code') {
           var auth_expires = ((new Date).getTime()) + (90*24*60*60000);
           // 'state' = username
+          console.log( "Update auth code: ");
           collection.update( { "user": state },
                              { $set: { "access_token":access_token,
                                        "refresh_token" : refresh_token,
@@ -217,6 +229,7 @@ function getTokens( typeOfToken, username, myCode, request, response) {
                                        "auth_expires" : auth_expires
                                         }});
         } else {
+          console.log( "Update refresh code: ");
           collection.update( { "user": state },
                              { $set: { "access_token":access_token,
                                        "refresh_token" : refresh_token,
@@ -234,5 +247,7 @@ function getTokens( typeOfToken, username, myCode, request, response) {
 }
 
 function refreshAccessToken( username, refreshToken, request, response) {
+  console.log( "*** refreshAccessToken: username = " + username +
+               ", refreshToken = " + refreshToken);
    getTokens( 'refresh_token', username, refreshToken, request, response);
 }
