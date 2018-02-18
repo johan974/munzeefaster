@@ -36,6 +36,7 @@ app.use(bodyParser.json());
 
 // General FILTER -- if not logging in ... do some checking
 app.use(function(req, res, next) {
+    console.log( "*** GENERAL: url = " + req.url + ", login = " + req.session.loggingin);
     if( req.url.indexOf(".") !== -1) {
       // Serve static pages
       res.sendFile( path.join(__dirname + '/public' + req.url));
@@ -82,8 +83,9 @@ app.use(function(req, res, next) {
         req.session.lastvisit = ((new Date).getTime());
         if( req.url === "/" ) {
           res.sendFile( path.join(__dirname + '/public/index.html'));
+          return ;
         } else {
-          // other routing request
+          // other routing requests
           next();
         }
       }
