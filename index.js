@@ -95,15 +95,15 @@ app.post("/login", function (req, res, next) {
         console.log( '*** LOGGING IN ');
         // Valid (re)login
         // Is there a token OR is it expired?
+        req.session.username = req.body.username;
+        req.session.loggingin = false;
         var nowPlus8Hours = (((new Date).getTime()) + (8*60*60000) );
         if( doc.auth_expires < nowPlus8Hours || doc.refresh_token === null || doc.refresh_token === undefined) {
           loginToMunzee( req.body.username, req, res);
         } else if( doc.expires < nowPlus8Hours) {
           refreshAccessToken( req.body.username, doc.refresh_token, req, res);
         } else {
-          req.session.username = req.body.username;
           req.session.accesstoken = doc.access_token;
-          req.session.loggingin = false;
           res.redirect('/index.html');
         }
       } else {
