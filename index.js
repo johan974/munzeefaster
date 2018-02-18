@@ -45,7 +45,7 @@ app.post("/login", function (req, res, next) {
           return ;
         }
         if( doc.expires < nowPlus8Hours) {
-          refreshAccessToken( req.body.username, doc.refresh_token, req, res) {
+          refreshAccessToken( req.body.username, doc.refresh_token, req, res);
           return;
         }
         req.session.username = req.body.username;
@@ -95,8 +95,9 @@ app.use(function(req, res, next) {
             return ;
           }
         }
-    }
+    });
     req.session.lastvisit = ((new Date).getTime());
+  }
 });
 
 app.use( '/logout', function(req, res, next) {
@@ -107,13 +108,15 @@ app.use( '/logout', function(req, res, next) {
   next();
 });
 
-app.get("/munzeefaster",function(request, response){
+app.get("/munzeefaster",function(request, response) {
     loginToMunzee( req.session.username, request, response);
 });
 
-app.get("/refreshtoken",function(request, response){
+app.get("/refreshtoken",function(request, response) {
   var usernameLastVisit = req.session.username;
   collection.findOne( { "user" : usernameLastVisit},{},function(error,doc){
+    console.log( '*** Refresh token');
+    console.log( doc);
     if( doc === undefined || doc === null) {
       req.session.accesstoken = null;
       req.session.loggingin = true;
@@ -122,7 +125,7 @@ app.get("/refreshtoken",function(request, response){
     }
     refreshAccessToken( usernameLastVisit, doc.refresh_token, req, res);
     return ;
-  }
+  });
 });
 // code=JkEQQmjgbPavmqtJtbYEyAD7lYAMYLKBEZhlfeTn&state=yourinfo
 app.get("/handle_oauth",function(request, response){
