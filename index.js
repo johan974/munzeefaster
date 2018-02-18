@@ -219,13 +219,13 @@ function getTokens( typeOfToken, username, myCode, request, response) {
         var token_type = result.data.token.token_type;
         var expires = result.data.token.expires;
         var expires_in = result.data.token.expires_in;
-        console.log( "Updating Mongodb with user: " + state);
+        console.log( "Updating Mongodb with user: " + username);
         console.log( "Updating Mongodb with access_token: " + access_token);
         if( typeOfToken === 'authorization_code') {
           var auth_expires = ((new Date).getTime()) + (90*24*60*60000);
           // 'state' = username
           console.log( "Update auth code: ");
-          collection.update( { "user": state },
+          collection.update( { "user": username },
                              { $set: { "access_token":access_token,
                                        "refresh_token" : refresh_token,
                                        "token_type": token_type,
@@ -235,7 +235,7 @@ function getTokens( typeOfToken, username, myCode, request, response) {
                                         }});
         } else {
           console.log( "Update refresh code: ");
-          collection.update( { "user": state },
+          collection.update( { "user": username },
                              { $set: { "access_token":access_token,
                                        "refresh_token" : refresh_token,
                                        "token_type": token_type,
