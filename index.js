@@ -44,6 +44,7 @@ app.use(function(req, res, next) {
       return ;
     }
     console.log( '*** GENERAL: session.user = ' +  req.session.username + ', session.token = ' + req.session.accesstoken);
+    console.log( '*** GENERAL: loggingin = ' +  req.session.loggingin);
     if( req.session.loggingin === undefined || req.session.loggingin === null || req.session.loggingin === false) {
       // Is there a username in the session cookie? No, then navigate to the login page
       console.log( '*** GENERAL: no.login session.user = ' +  req.session.username + ', session.token = ' + req.session.accesstoken);
@@ -53,7 +54,7 @@ app.use(function(req, res, next) {
         req.session.loggingin = true;
         console.log( '*** GENERAL => to login.html');
         res.redirect('/login.html');
-        next();
+        return;
       } else {
         // Was the last action of the user > 8 hours? The check the tokens
         var lastVisitLongerThan8hoursAgo = ((new Date).getTime()) - ( 8 * 60 * 60000);
