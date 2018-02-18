@@ -25,8 +25,7 @@ var redirect_uri = "https://munzeefaster.herokuapp.com/handle_oauth";
 //  session authentication
 app.use(session({
     secret: '2C44-4D44-WppQ38S',
-    resave: true,
-    saveUninitialized: true
+    cookie: { maxAge: 6000000 }
 }));
 // Authentication and Authorization Middleware
 app.use(bodyParser.urlencoded({
