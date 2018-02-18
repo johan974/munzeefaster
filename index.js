@@ -35,7 +35,7 @@ app.use(bodyParser.json());
 
 app.post("/login", function (req, res, next) {
     console.log( '*** /login: body.user = ' +  req.body.usernam);
-    collection.findOne( { "user" : req.body.username},{},function(e,doc){
+    collection.findOne( { "user" : req.body.username},{},function(e,doc) {
       if( doc !== undefined && doc !== null && req.body.username === doc.user &&
           req.body.password === doc.pw) {
         // Valid (re)login
@@ -114,12 +114,12 @@ app.use( '/logout', function(req, res, next) {
   next();
 });
 
-app.get("/munzeefaster",function(request, response) {
-    console.log( '*** /munzeefaster: session.user = ' +  req.session.username + ', session.token = ' + req.session.accesstoken);
-    loginToMunzee( req.session.username, request, response);
+app.get( "/munzeefaster",function(request, response) {
+    console.log( '*** /munzeefaster: session.user = ' +  request.session.username + ', session.token = ' + request.session.accesstoken);
+    loginToMunzee( request.session.username, request, response);
 });
 
-app.get("/refreshtoken",function(request, response) {
+app.get("/refreshtoken",function(req, res) {
   console.log( '*** /refreshtoken: session.user = ' +  req.session.username + ', session.token = ' + req.session.accesstoken);
   var usernameLastVisit = req.session.username;
   collection.findOne( { "user" : usernameLastVisit},{},function(error,doc){
@@ -137,8 +137,7 @@ app.get("/refreshtoken",function(request, response) {
 });
 // code=JkEQQmjgbPavmqtJtbYEyAD7lYAMYLKBEZhlfeTn&state=yourinfo
 app.get("/handle_oauth",function(request, response){
-    console.log( '*** /handle_oauth: query.code = ' +  request.query.code + ', query.state = ' + request.query.state);
-    // depricated: var id = request.param('id');
+    console.log( "*** /handle_oauth: query.code = " +  request.query.code + ', query.state = ' + request.query.state);    // depricated: var id = request.param('id');
     var myCode = request.query.code;
     var stateUsername = request.query.state;
     console.log( '*** State = ' + stateUsername);
@@ -152,13 +151,6 @@ app.use(express.static( __dirname + '/public'));
 var port = process.env.PORT || 8000;
 app.listen(port);
 
-// function showAccounts() {
-//   console.log( "ShowingAccounts() accounts --");
-//   collection.find({},{},function(e,docs){
-//     console.log(docs);
-//     console.log( "ShowingAccounts() the accounts --");
-//   });
-// }
 function loginToMunzee( username, request, response) {
   console.log( "*** loginToMunzee: username = " + username);
   // TODO: de variabele zouden uit de security moeten komen.
@@ -170,8 +162,7 @@ function loginToMunzee( username, request, response) {
 }
 
 function getTokens( typeOfToken, username, myCode, request, response) {
-  console.log( "*** getTokens: username = " + username + ", typeOftoken  = " + typeOfToken +
-               ", code = " + myCode);
+  console.log( "*** getTokens: username = " + username + ", typeOftoken  = " + typeOfToken + ", code = " + myCode);
   var codeType;
   var codeParameter;
   if( typeOfToken === 'authorization_code') {
