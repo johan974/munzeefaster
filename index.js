@@ -36,15 +36,12 @@ app.use(bodyParser.json());
 
 // General FILTER -- if not logging in ... do some checking
 app.use(function(req, res, next) {
-    console.log( '*** GENERAL url = ' + req.url);
     if( req.url.indexOf(".") !== -1) {
-      console.log( '>>> GENERAL url direct = ' + req.url);
+      // Serve static pages
       res.sendFile( path.join(__dirname + '/public' + req.url));
-      console.log( '<<< GENERAL url direct = ' + req.url);
       return ;
     }
-    console.log( '*** GENERAL: session.user = ' +  req.session.username + ', session.token = ' + req.session.accesstoken);
-    console.log( '*** GENERAL: loggingin = ' +  req.session.loggingin);
+    // if logged in ...
     if( req.session.loggingin === undefined || req.session.loggingin === null || req.session.loggingin === false) {
       // Is there a username in the session cookie? No, then navigate to the login page
       console.log( '*** GENERAL: no.login session.user = ' +  req.session.username + ', session.token = ' + req.session.accesstoken);
@@ -56,23 +53,24 @@ app.use(function(req, res, next) {
         res.redirect('/login.html');
         return;
       } else {
-        // Was the last action of the user > 8 hours? The check the tokens
+        // Was the last action of the user > 8 hours?
         var lastVisitLongerThan8hoursAgo = ((new Date).getTime()) - ( 8 * 60 * 60000);
         var lastVisit = req.session.lastvisit;
         if( lastVisit === undefinied || lastVisit === null || lastVisit < lastVisitLongerThan8hoursAgo) {
-          // find the user
+          // Will a token expire?
           console.log( "GENERAL: finding use in db ... " + req.session.username);
           collection.findOne( { "user" : usernameLastVisit},{},function(error,doc){
             if( doc === undefined || doc === null) {
               req.session.accesstoken = null;
               req.session.loggingin = true;
               res.redirect('/login.html');
-              next();
+              return ;
             } else {
               // will the access token expiry witin 8 hours?
               var nowPlus8Hours = (((new Date).getTime()) + (8*60*60000) );
               if( doc.expires < nowPlus8Hours) {
-                if( doc.auth_expires < nowPlus8Hours) {
+                // Will the authentication also expire? Get in 1 go both tokens!
+                if( doc.auth_expires < nowPlus8Hours || doc.refresh_token === null) {
                   loginToMunzee( usernameLastVisit, req, res);
                 } else {
                   refreshAccessToken( usernameLastVisit, doc.refresh_token, req, res);
@@ -84,7 +82,6 @@ app.use(function(req, res, next) {
       }
     }
   } else {
-    console.log( '*** GENERAL: req.url = ' +  req.url + ', username = ' + req.body.usernam);
     // Via next() ga je verder met routing !!!!!!!
     next();
   }
