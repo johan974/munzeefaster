@@ -83,38 +83,40 @@ app.use(function(req, res, next) {
         req.session.lastvisit = ((new Date).getTime());
       }
     }
+  } else {
+    console.log( '*** GENERAL: req.url = ' +  req.url + ', username = ' + req.body.usernam);
   }
 });
 
 app.post("/login", function (req, res, next) {
     console.log( '*** /login: body.user = ' +  req.body.usernam);
-    collection.findOne( { "user" : req.body.username},{},function(e,doc) {
-      if( doc !== undefined && doc !== null && req.body.username === doc.user &&
-          req.body.password === doc.pw) {
-        console.log( '*** LOGGING IN ');
-        // Valid (re)login
-        // Is there a token OR is it expired?
-        var nowPlus8Hours = (((new Date).getTime()) + (8*60*60000) );
-        if( doc.auth_expires < nowPlus8Hours) {
-          loginToMunzee( req.body.username, req, res);
-        } else if( doc.expires < nowPlus8Hours) {
-          refreshAccessToken( req.body.username, doc.refresh_token, req, res);
-        } else {
-          req.session.username = req.body.username;
-          req.session.accesstoken = doc.access_token;
-          req.session.loggingin = false;
-          res.redirect('/index.html');
-          next();
-        }
-      } else {
-        console.log( 'Invalid username or password');
-        req.session.username = null;
-        req.session.accesstoken = null;
-        req.session.loggingin = true;
-        res.redirect('/login.html');
-        next();
-      }
-    });
+    // collection.findOne( { "user" : req.body.username},{},function(e,doc) {
+    //   if( doc !== undefined && doc !== null && req.body.username === doc.user &&
+    //       req.body.password === doc.pw) {
+    //     console.log( '*** LOGGING IN ');
+    //     // Valid (re)login
+    //     // Is there a token OR is it expired?
+    //     var nowPlus8Hours = (((new Date).getTime()) + (8*60*60000) );
+    //     if( doc.auth_expires < nowPlus8Hours) {
+    //       loginToMunzee( req.body.username, req, res);
+    //     } else if( doc.expires < nowPlus8Hours) {
+    //       refreshAccessToken( req.body.username, doc.refresh_token, req, res);
+    //     } else {
+    //       req.session.username = req.body.username;
+    //       req.session.accesstoken = doc.access_token;
+    //       req.session.loggingin = false;
+    //       res.redirect('/index.html');
+    //       next();
+    //     }
+    //   } else {
+    //     console.log( 'Invalid username or password');
+    //     req.session.username = null;
+    //     req.session.accesstoken = null;
+    //     req.session.loggingin = true;
+    //     res.redirect('/login.html');
+    //     next();
+    //   }
+    // });
 });
 
 app.use( '/logout', function(req, res, next) {
