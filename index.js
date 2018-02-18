@@ -1,5 +1,6 @@
 var express = require('express');
 var app = express();
+var path = require('path');
 
 // rest client => wrong ... it is a FORM request!!
 // var Client = require('node-rest-client').Client;
@@ -36,8 +37,14 @@ app.use(bodyParser.json());
 // General FILTER -- if not logging in ... do some checking
 app.use(function(req, res, next) {
     console.log( '*** GENERAL url = ' + req.url);
+    if( req.url.indexOf(".") !== -1) {
+      console.log( '>>> GENERAL url direct = ' + req.url);
+      res.sendFile( path.join(__dirname + '/public' + req.url));
+      console.log( '<<< GENERAL url direct = ' + req.url);
+      return ;
+    }
     console.log( '*** GENERAL: session.user = ' +  req.session.username + ', session.token = ' + req.session.accesstoken);
-    if( req.session.loggingin === false) {
+    if( req.session.loggingin === undefined || req.session.loggingin === null || req.session.loggingin === false) {
       // Is there a username in the session cookie? No, then navigate to the login page
       console.log( '*** GENERAL: no.login session.user = ' +  req.session.username + ', session.token = ' + req.session.accesstoken);
       var usernameLastVisit = req.session.username;
@@ -102,6 +109,7 @@ app.post("/login", function (req, res, next) {
         console.log( 'Invalid username or password');
         req.session.username = null;
         req.session.accesstoken = null;
+        req.session.loggingin = true;
         res.redirect('/login.html');
         next();
       }
