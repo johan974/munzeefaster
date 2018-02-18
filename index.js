@@ -81,7 +81,7 @@ app.use(function(req, res, next) {
         // OK - no filtering needed.
         req.session.lastvisit = ((new Date).getTime());
         if( req.url === "/" ) {
-          res.sendFile( path.join(__dirname + '/public/index.html');
+          res.sendFile( path.join(__dirname + '/public/index.html'));
         } else {
           // other routing request
           next();
