@@ -35,6 +35,7 @@ app.use(bodyParser.json());
 
 // General FILTER -- if not logging in ... do some checking
 app.use(function(req, res, next) {
+    console.log( '*** GENERAL url = ' + req.url);
     console.log( '*** GENERAL: session.user = ' +  req.session.username + ', session.token = ' + req.session.accesstoken);
     if( req.session.loggingin === false) {
       // Is there a username in the session cookie? No, then navigate to the login page
@@ -43,33 +44,36 @@ app.use(function(req, res, next) {
       if( usernameLastVisit === undefined || usernameLastVisit === null) {
         req.session.accesstoken = null;
         req.session.loggingin = true;
+        console.log( '*** GENERAL => to login.html');
         res.redirect('/login.html');
-        return ;
-      }
-      // Was the last action of the user > 8 hours? The check the tokens
-      var lastVisitLongerThan8hoursAgo = ((new Date).getTime()) - ( 8 * 60 * 60000);
-      var lastVisit = req.session.lastvisit;
-      if( lastVisit === undefinied || lastVisit === null || lastVisit < lastVisitLongerThan8hoursAgo) {
-        // find the user
-        console.log( "GENERAL: finding use in db ... " + req.session.username);
-        collection.findOne( { "user" : usernameLastVisit},{},function(error,doc){
-          if( doc === undefined || doc === null) {
-            req.session.accesstoken = null;
-            req.session.loggingin = true;
-            res.redirect('/login.html');
-            return ;
-          }
-          // will the access token expiry witin 8 hours?
-          var nowPlus8Hours = (((new Date).getTime()) + (8*60*60000) );
-          if( doc.expires < nowPlus8Hours) {
-            if( doc.auth_expires < nowPlus8Hours) {
-              loginToMunzee( usernameLastVisit, req, res);
+        next();
+      } else {
+        // Was the last action of the user > 8 hours? The check the tokens
+        var lastVisitLongerThan8hoursAgo = ((new Date).getTime()) - ( 8 * 60 * 60000);
+        var lastVisit = req.session.lastvisit;
+        if( lastVisit === undefinied || lastVisit === null || lastVisit < lastVisitLongerThan8hoursAgo) {
+          // find the user
+          console.log( "GENERAL: finding use in db ... " + req.session.username);
+          collection.findOne( { "user" : usernameLastVisit},{},function(error,doc){
+            if( doc === undefined || doc === null) {
+              req.session.accesstoken = null;
+              req.session.loggingin = true;
+              res.redirect('/login.html');
+              next();
             } else {
-              refreshAccessToken( usernameLastVisit, doc.refresh_token, req, res);
+              // will the access token expiry witin 8 hours?
+              var nowPlus8Hours = (((new Date).getTime()) + (8*60*60000) );
+              if( doc.expires < nowPlus8Hours) {
+                if( doc.auth_expires < nowPlus8Hours) {
+                  loginToMunzee( usernameLastVisit, req, res);
+                } else {
+                  refreshAccessToken( usernameLastVisit, doc.refresh_token, req, res);
+                }
+              }
             }
-          }
-      });
-      req.session.lastvisit = ((new Date).getTime());
+        });
+        req.session.lastvisit = ((new Date).getTime());
+      }
     }
   }
 });
@@ -86,18 +90,20 @@ app.post("/login", function (req, res, next) {
         if( doc.auth_expires < nowPlus8Hours) {
           loginToMunzee( req.body.username, req, res);
         } else if( doc.expires < nowPlus8Hours) {
-            refreshAccessToken( req.body.username, doc.refresh_token, req, res);
+          refreshAccessToken( req.body.username, doc.refresh_token, req, res);
         } else {
           req.session.username = req.body.username;
           req.session.accesstoken = doc.access_token;
           req.session.loggingin = false;
           res.redirect('/index.html');
+          next();
         }
       } else {
         console.log( 'Invalid username or password');
         req.session.username = null;
         req.session.accesstoken = null;
         res.redirect('/login.html');
+        next();
       }
     });
 });
