@@ -55,7 +55,7 @@ app.use(function(req, res, next) {
         return;
       } else {
         // Was the last action of the user > 8 hours?
-        var lastVisitLongerThan8hoursAgo = ((new Date).getTime()) - ( 8 * 60 * 60000);
+        var lastVisitLongerThan8hoursAgo = ((new Date).getTime()) - ( 8 * 60 * 60);
         var lastVisit = req.session.lastvisit;
         if( lastVisit === undefined || lastVisit === null || lastVisit < lastVisitLongerThan8hoursAgo) {
           // Will a token expire?
@@ -68,7 +68,7 @@ app.use(function(req, res, next) {
               return ;
             } else {
               // will the access token expiry witin 8 hours?
-              var nowPlus8Hours = (((new Date).getTime()) + (8*60*60000) );
+              var nowPlus8Hours = (((new Date).getTime()) + (8*60*60) );
               if( doc.expires < nowPlus8Hours) {
                 // Will the authentication also expire? Get in 1 go both tokens!
                 if( doc.auth_expires < nowPlus8Hours || doc.refresh_token === null) {
@@ -106,7 +106,7 @@ app.post("/login", function (req, res, next) {
         // Is there a token OR is it expired?
         req.session.username = req.body.username;
         req.session.loggingin = false;
-        var nowPlus8Hours = (((new Date).getTime()) + (8*60*60000) );
+        var nowPlus8Hours = (((new Date).getTime()) + (8*60*60) );
         console.log( 'Now plus 8 hours: ' + nowPlus8Hours);
         if( doc.auth_expires < nowPlus8Hours || doc.refresh_token === null || doc.refresh_token === undefined) {
           loginToMunzee( req.body.username, req, res);
@@ -230,7 +230,7 @@ function getTokens( typeOfToken, username, myCode, request, response) {
         console.log( "Updating Mongodb with user: " + username);
         console.log( "Updating Mongodb with access_token: " + access_token);
         if( typeOfToken === 'authorization_code') {
-          var auth_expires = ((new Date).getTime()) + (90*24*60*60000);
+          var auth_expires = ((new Date).getTime()) + (90*24*60*60);
           // 'state' = username
           console.log( "Update auth code: ");
           collection.update( { "user": username },
