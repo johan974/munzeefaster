@@ -57,6 +57,8 @@ app.use(function(req, res, next) {
         // Was the last action of the user > 8 hours?
         var lastVisitLongerThan8hoursAgo = ((new Date).getTime()) - ( 8 * 60 * 60000);
         var lastVisit = req.session.lastvisit;
+        console.log( ' last visit = ' + lastVisit);
+        req.session.lastvisit = ((new Date).getTime());
         if( lastVisit === undefined || lastVisit === null || lastVisit < lastVisitLongerThan8hoursAgo) {
           // Will a token expire?
           console.log( "GENERAL: finding use in db ... " + req.session.username);
@@ -76,14 +78,15 @@ app.use(function(req, res, next) {
                 if( doc.auth_expires < nowPlus8Hours || doc.refresh_token === null) {
                   console.log( ">>>> Auth token expires within 8 hours: " + doc.auth_expires);
                   loginToMunzee( usernameLastVisit, req, res);
+                  return ;
                 } else {
                   refreshAccessToken( usernameLastVisit, doc.refresh_token, req, res);
+                  return ;
                 }
               }
             }
         });
         // OK - no filtering needed.
-        req.session.lastvisit = ((new Date).getTime());
         if( req.url === "/" ) {
           res.sendFile( path.join(__dirname + '/public/index.html'));
           return ;
