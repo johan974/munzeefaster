@@ -25,7 +25,7 @@ var redirect_uri = "https://munzeefaster.herokuapp.com/handle_oauth";
 //  session cookie authentication
 app.use(session({
     secret: '2C44-4D44-WppQ38S',
-    cookie: { maxAge: 6000000 }
+    cookie: { maxAge: 600000000 }
 }));
 
 // Authentication and Authorization Middleware
@@ -69,9 +69,12 @@ app.use(function(req, res, next) {
             } else {
               // will the access token expiry witin 8 hours?
               var nowPlus8Hours = (((new Date).getTime()) + (8*60*60) );
+              console.log( ">>>> Now plus 8 hours: " + nowPlus8Hours);
               if( doc.expires < nowPlus8Hours) {
+                console.log( ">>>> Access token expires within 8 hours: " + doc.expires);
                 // Will the authentication also expire? Get in 1 go both tokens!
                 if( doc.auth_expires < nowPlus8Hours || doc.refresh_token === null) {
+                  console.log( ">>>> Auth token expires within 8 hours: " + doc.auth_expires);
                   loginToMunzee( usernameLastVisit, req, res);
                 } else {
                   refreshAccessToken( usernameLastVisit, doc.refresh_token, req, res);
@@ -109,6 +112,7 @@ app.post("/login", function (req, res, next) {
         var nowPlus8Hours = (((new Date).getTime()) + (8*60*60) );
         console.log( 'Now plus 8 hours: ' + nowPlus8Hours);
         if( doc.auth_expires < nowPlus8Hours || doc.refresh_token === null || doc.refresh_token === undefined) {
+          console.log( ">>>> Authentication token expires within 8 hours: " + doc.auth_expires);
           loginToMunzee( req.body.username, req, res);
         } else if( doc.expires < nowPlus8Hours) {
           console.log( 'Doc.expires ' + doc.expires + " < " + nowPlus8Hours);
@@ -227,6 +231,9 @@ function getTokens( typeOfToken, username, myCode, request, response) {
         var token_type = result.data.token.token_type;
         var expires = result.data.token.expires;
         var expires_in = result.data.token.expires_in;
+        console.log( "---- update access token >>> ");
+        request.session.accesstoken = access_token;
+        console.log( "---- update access token <<< "); 
         console.log( "Updating Mongodb with user: " + username);
         console.log( "Updating Mongodb with access_token: " + access_token);
         if( typeOfToken === 'authorization_code') {
@@ -250,7 +257,6 @@ function getTokens( typeOfToken, username, myCode, request, response) {
                                        "expires_in": expires_in
                                         }});
         }
-        request.session.accesstoken = access_token;
       } else {
         console.log( "Error: " + error);
       }
