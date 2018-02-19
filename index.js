@@ -55,7 +55,7 @@ app.use(function(req, res, next) {
         return;
       } else {
         // Was the last action of the user > 8 hours?
-        var lastVisitLongerThan8hoursAgo = ((new Date).getTime()) - ( 8 * 60 * 60);
+        var lastVisitLongerThan8hoursAgo = ((new Date).getTime()) - ( 8 * 60 * 60000);
         var lastVisit = req.session.lastvisit;
         if( lastVisit === undefined || lastVisit === null || lastVisit < lastVisitLongerThan8hoursAgo) {
           // Will a token expire?
@@ -68,7 +68,7 @@ app.use(function(req, res, next) {
               return ;
             } else {
               // will the access token expiry witin 8 hours?
-              var nowPlus8Hours = (((new Date).getTime()) + (8*60*60) );
+              var nowPlus8Hours = (((new Date).getTime()) + (8*60*60000) );
               console.log( ">>>> Now plus 8 hours: " + nowPlus8Hours);
               if( doc.expires < nowPlus8Hours) {
                 console.log( ">>>> Access token expires within 8 hours: " + doc.expires);
@@ -109,7 +109,7 @@ app.post("/login", function (req, res, next) {
         // Is there a token OR is it expired?
         req.session.username = req.body.username;
         req.session.loggingin = false;
-        var nowPlus8Hours = (((new Date).getTime()) + (8*60*60) );
+        var nowPlus8Hours = (((new Date).getTime()) + (8*60*60000) );
         console.log( 'Now plus 8 hours: ' + nowPlus8Hours);
         if( doc.auth_expires < nowPlus8Hours || doc.refresh_token === null || doc.refresh_token === undefined) {
           console.log( ">>>> Authentication token expires within 8 hours: " + doc.auth_expires);
@@ -229,15 +229,15 @@ function getTokens( typeOfToken, username, myCode, request, response) {
         var access_token = result.data.token.access_token;
         var refresh_token = result.data.token.refresh_token;
         var token_type = result.data.token.token_type;
-        var expires = result.data.token.expires;
+        var expires = result.data.token.expires * 1000;
         var expires_in = result.data.token.expires_in;
         console.log( "---- update access token >>> ");
         request.session.accesstoken = access_token;
-        console.log( "---- update access token <<< "); 
+        console.log( "---- update access token <<< ");
         console.log( "Updating Mongodb with user: " + username);
         console.log( "Updating Mongodb with access_token: " + access_token);
         if( typeOfToken === 'authorization_code') {
-          var auth_expires = ((new Date).getTime()) + (90*24*60*60);
+          var auth_expires = ((new Date).getTime()) + (90*24*60*60000);
           // 'state' = username
           console.log( "Update auth code: ");
           collection.update( { "user": username },
