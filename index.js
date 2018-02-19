@@ -86,14 +86,14 @@ app.use(function(req, res, next) {
               }
             }
         });
-        // OK - no filtering needed.
-        if( req.url === "/" ) {
-          res.sendFile( path.join(__dirname + '/public/index.html'));
-          return ;
-        } else {
-          // other routing requests
-          next();
-        }
+      }
+      // OK - no filtering needed.
+      if( req.url === "/" ) {
+        res.sendFile( path.join(__dirname + '/public/index.html'));
+        return ;
+      } else {
+        // other routing requests
+        next();
       }
     }
   } else {
