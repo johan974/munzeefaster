@@ -176,8 +176,10 @@ app.get("/handle_oauth",function(request, response){
 
 app.get("/nearby",function(req, res){
     console.log( "*** /nearby: lat = " +  req.query.lat + ', lng = ' + req.query.lng);    // depricated: var id = request.param('id');
-    var latitude = req.query.lat.replace( "_", ".") + 0;
-    var longitude =  req.query.lng.replace( "_", ".") + 0;
+    var latitudeS = req.query.lat.replace( "_", ".");
+    var latitude = Number( latitudeS);
+    var longitudeS =  req.query.lng.replace( "_", ".");
+    var longitude = Number( longitudeS);
     console.log( "*** /nearby: lat = " +  latitude + ', lng = ' + longitude);    // depricated: var id = request.param('id');
     var lat1 = latitude - 0.05;
     var lat2 = latitude + 0.05;
