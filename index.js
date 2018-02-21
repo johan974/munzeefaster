@@ -174,7 +174,7 @@ app.get("/handle_oauth",function(request, response){
     getTokens( 'authorization_code', stateUsername, myCode, request, response);
   });
 
-app.get("/nearby/:lat/:lng",function(req, res){
+app.get("/nearby",function(req, res){
     console.log( "*** /nearby: lat = " +  req.query.lat + ', lng = ' + req.query.lng);    // depricated: var id = request.param('id');
     var lat1 = req.query.lat - 0.05;
     var lat2 = req.query.lat + 0.05;
