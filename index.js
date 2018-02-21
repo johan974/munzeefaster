@@ -209,7 +209,7 @@ app.get("/nearby",function(req, res){
         var result = JSON.parse(responseBody);
         console.log( 'Nearby success: ');
         console.log( result);
-        result.data.munzees.forEach( function( munzee) {
+        result.data[0].munzees.forEach( function( munzee) {
           console.log( munzee);
         });
       } else {
