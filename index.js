@@ -199,8 +199,8 @@ app.get("/nearby",function(req, res){
       body: bodyData,
       method : 'POST'
     }, function( error, responsePost, responseBody) {
-      if (!error && response.statusCode === 200) {
-        var result = JSON.parse(body);
+      if (!error && responsePost.statusCode === 200) {
+        var result = JSON.parse(responseBody);
         console.log( 'Nearby success: ');
         console.log( result);
       } else {
