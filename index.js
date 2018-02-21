@@ -175,11 +175,11 @@ app.get("/handle_oauth",function(request, response){
   });
 
 app.get("/nearby/:lat/:lng",function(req, res){
-    console.log( "*** /nearby: lat = " +  req.params.lat + ', lng = ' + req.params.lng);    // depricated: var id = request.param('id');
-    var lat1 = req.params.lat - 0.05;
-    var lat2 = req.params.lat + 0.05;
-    var lng1 = req.params.lng - 0.05;
-    var lng2 = req.params.lng + 0.05;
+    console.log( "*** /nearby: lat = " +  req.query.lat + ', lng = ' + req.query.lng);    // depricated: var id = request.param('id');
+    var lat1 = req.query.lat - 0.05;
+    var lat2 = req.query.lat + 0.05;
+    var lng1 = req.query.lng - 0.05;
+    var lng2 = req.query.lng + 0.05;
     var body1 = '{"exclude":"own, captured, maintenance","limit":100,"fields":"munzee_id,creator_username, friendly_name,latitude,longitude,archived, number_of_captures, last_captured_at, capture_type_id,code,notes,proximity_radius_ft,has_user_captured_munzee", ';
     var body2 = '"points":{"box1":{"timestamp": 0,"lat1":' + lat1 + ',"lng1":' + lng1 +
                 ',"lat2":' +  lat2 + ',"lng2":' + lng2 + '}}';
