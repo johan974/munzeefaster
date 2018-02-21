@@ -185,7 +185,7 @@ app.get("/nearby",function(req, res){
     var lat2 = latitude + 0.05;
     var lng1 = longitude - 0.05;
     var lng2 = longitude + 0.05;
-    var body1 = '{"exclude":"own, captured, maintenance","limit":100,"fields":"munzee_id,creator_username, friendly_name,latitude,longitude,archived, number_of_captures, last_captured_at, capture_type_id,code,notes,proximity_radius_ft,has_user_captured_munzee", ';
+    var body1 = '{"exclude":"own, captured, maintenance","limit":50,"fields":"munzee_id,creator_username, friendly_name,latitude,longitude,archived, number_of_captures, last_captured_at, capture_type_id,code,notes,proximity_radius_ft,has_user_captured_munzee", ';
     var body2 = '"points":{"box1":{"timestamp": 0,"lat1":' + lat1 + ',"lng1":' + lng1 +
                 ',"lat2":' +  lat2 + ',"lng2":' + lng2 + '}}';
     var bodyData = body1 + body2 + '}';
@@ -209,11 +209,15 @@ app.get("/nearby",function(req, res){
         var result = JSON.parse(responseBody);
         console.log( 'Nearby success: ');
         console.log( result);
+        result.data.munzees.forEach( function( munzee) {
+          console.log( munzee);
+        });
       } else {
         console.log( 'Nearby error');
         console.log( responsePost.statusCode);
         console.log( error);
       }
+      res.sendFile( "/index.html");
   });
 });
 
