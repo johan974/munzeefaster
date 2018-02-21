@@ -189,16 +189,20 @@ app.get("/nearby",function(req, res){
     var body2 = '"points":{"box1":{"timestamp": 0,"lat1":' + lat1 + ',"lng1":' + lng1 +
                 ',"lat2":' +  lat2 + ',"lng2":' + lng2 + '}}';
     var bodyData = body1 + body2 + '}';
+    var myform = {
+      data : bodyData
+    };
+    var formData = querystring.stringify(myform);
+    var contentLength = formData.length;
     console.log( "Body of nearby post with access token: " + req.session.accesstoken);
-    console.log( bodyData);
     requestPost( {
       headers : {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
         'Authorization': req.session.accesstoken,
         'Accept': 'application/json'
       },
       uri : 'https://api.munzee.com/map/boundingbox/',
-      json: bodyData,
+      body: formData,
       method : 'POST'
     }, function( error, responsePost, responseBody) {
       if (!error && responsePost.statusCode === 200) {
