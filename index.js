@@ -196,7 +196,7 @@ app.get("/nearby",function(req, res){
         'Accept': 'application/json'
       },
       uri : 'https://api.munzee.com/map/boundingbox/',
-      body: bodyData,
+      json: bodyData,
       method : 'POST'
     }, function( error, responsePost, responseBody) {
       if (!error && responsePost.statusCode === 200) {
@@ -205,6 +205,7 @@ app.get("/nearby",function(req, res){
         console.log( result);
       } else {
         console.log( 'Nearby error');
+        console.log( responsePost.statusCode);
         console.log( error);
       }
   });
