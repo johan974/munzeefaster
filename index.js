@@ -217,7 +217,7 @@ app.get("/nearby",function(req, res){
         console.log( responsePost.statusCode);
         console.log( error);
       }
-      res.sendFile( "/index.html");
+      res.sendFile( "index.html");
   });
 });
 
