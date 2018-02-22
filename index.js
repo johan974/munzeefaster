@@ -217,7 +217,7 @@ app.get("/nearby",function(req, res){
         console.log( responsePost.statusCode);
         console.log( error);
       }
-      res.sendFile( "/public/index.html");
+      res.sendFile( path.join(__dirname, '/public', 'index.html'));
   });
 });
 
@@ -249,7 +249,7 @@ app.get("/munzee",function(req, res){
         console.log( error);
         console.log( responsePost);
       }
-      res.sendFile( "/public/index.html");
+      res.sendFile( path.join(__dirname, '/public', 'index.html'));
   });
 });
 
@@ -273,7 +273,7 @@ app.get("/capture",function(req, res){
         'Authorization': req.session.accesstoken,
         'Accept': 'application/json'
       },
-      uri : 'POST https://api.munzee.com/capture/light/',
+      uri : 'https://api.munzee.com/capture/light/',
       body: formData,
       method : 'POST'
     }, function( error, responsePost, responseBody) {
@@ -286,7 +286,7 @@ app.get("/capture",function(req, res){
         // console.log( responsePost.statusCode);
         console.log( error);
       }
-      res.sendFile( "/public/index.html");
+      res.sendFile( path.join(__dirname, '/public', 'index.html'));
   });
 });
 
