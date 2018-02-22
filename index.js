@@ -246,8 +246,8 @@ app.get("/munzee",function(req, res){
         console.log( result.data);
       } else {
         console.log( 'Get1 error');
-        console.log( responsePost.statusCode);
         console.log( error);
+        console.log( responsePost);
       }
       res.sendFile( "/public/index.html");
   });
@@ -283,7 +283,7 @@ app.get("/capture",function(req, res){
         console.log( result.data);
       } else {
         console.log( 'Get1 error');
-        console.log( responsePost.statusCode);
+        // console.log( responsePost.statusCode);
         console.log( error);
       }
       res.sendFile( "/public/index.html");
