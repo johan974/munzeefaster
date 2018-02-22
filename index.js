@@ -217,13 +217,13 @@ app.get("/nearby",function(req, res){
         console.log( responsePost.statusCode);
         console.log( error);
       }
-      res.sendFile( "index.html");
+      res.sendFile( "/public/index.html");
   });
 });
 
 app.get("/munzee",function(req, res){
     console.log( "*** /nearby: munzee id = " +  req.query.id);
-    var bodyData = '{"munzee_id":' + req.query.id + ',"closest":1}';
+    var bodyData = '{"munzee_id":' + req.query.id + ',"closest":0}';
     var myform = {
       data : bodyData
     };
@@ -249,7 +249,44 @@ app.get("/munzee",function(req, res){
         console.log( responsePost.statusCode);
         console.log( error);
       }
-      res.sendFile( "index.html");
+      res.sendFile( "/public/index.html");
+  });
+});
+
+app.get("/capture",function(req, res){
+    // console.log( "*** /nearby: munzee id = " +  req.query.id);
+    var latitude = 52.2256993;
+    var longitude = 6.08810485;
+    var qrcode = "http://www.munzee.com/m/BaDo/1276/";
+    var now = ((new Date).getTime());
+    var bodyData = '{"language":"EN","latitude":' + latitude + ',"longitude":' + longitude +
+                    ',"code":' + qrcode + ',"time":' + now + ',"accuracy":5}';
+    var myform = {
+      data : bodyData
+    };
+    var formData = querystring.stringify(myform);
+    var contentLength = formData.length;
+    console.log( "Body of capture post with access token: " + req.session.accesstoken);
+    requestPost( {
+      headers : {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': req.session.accesstoken,
+        'Accept': 'application/json'
+      },
+      uri : 'POST https://api.munzee.com/capture/light/',
+      body: formData,
+      method : 'POST'
+    }, function( error, responsePost, responseBody) {
+      if (!error && responsePost.statusCode === 200) {
+        var result = JSON.parse(responseBody);
+        console.log( 'Get1 success: ');
+        console.log( result.data);
+      } else {
+        console.log( 'Get1 error');
+        console.log( responsePost.statusCode);
+        console.log( error);
+      }
+      res.sendFile( "/public/index.html");
   });
 });
 
