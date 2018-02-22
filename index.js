@@ -221,6 +221,38 @@ app.get("/nearby",function(req, res){
   });
 });
 
+app.get("/munzee",function(req, res){
+    console.log( "*** /nearby: munzee id = " +  req.query.id);
+    var bodyData = '{"munzee_id":' + req.query.id + ',"closest":1}';
+    var myform = {
+      data : bodyData
+    };
+    var formData = querystring.stringify(myform);
+    var contentLength = formData.length;
+    console.log( "Body of get1 post with access token: " + req.session.accesstoken);
+    requestPost( {
+      headers : {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': req.session.accesstoken,
+        'Accept': 'application/json'
+      },
+      uri : 'https://api.munzee.com/munzee/',
+      body: formData,
+      method : 'POST'
+    }, function( error, responsePost, responseBody) {
+      if (!error && responsePost.statusCode === 200) {
+        var result = JSON.parse(responseBody);
+        console.log( 'Get1 success: ');
+        console.log( result.data);
+      } else {
+        console.log( 'Get1 error');
+        console.log( responsePost.statusCode);
+        console.log( error);
+      }
+      res.sendFile( "index.html");
+  });
+});
+
 app.use(express.static( __dirname + '/public'));
 var port = process.env.PORT || 8000;
 app.listen(port);
