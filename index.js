@@ -283,7 +283,7 @@ app.get("/capture",function(req, res){
         console.log( result.data);
       } else {
         console.log( 'Get1 error');
-        // console.log( responsePost.statusCode);
+        console.log( responsePost);
         console.log( error);
       }
       res.sendFile( path.join(__dirname, '/public', 'index.html'));
