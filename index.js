@@ -55,7 +55,7 @@ app.use(function(req, res, next) {
         return;
       } else {
         // Was the last action of the user > 8 hours?
-        console.log( "Has token, will it expire soon? "); 
+        console.log( "Has token, will it expire soon? ");
         var lastVisitLongerThan8hoursAgo = ((new Date).getTime()) - ( 8 * 60 * 60000);
         var lastVisit = req.session.lastvisit;
         console.log( ' last visit = ' + lastVisit);
@@ -279,9 +279,11 @@ app.get("/capture",function(req, res){
       method : 'POST'
     }, function( error, responsePost, responseBody) {
       if (!error && responsePost.statusCode === 200) {
+        console.log( 'Capture success responseBody: ');
+        console.log( responseBody);
         var result = JSON.parse(responseBody);
-        console.log( 'Capture success: ');
-        console.log( result.data);
+        console.log( 'Capture success result: ');
+        console.log( result);
       } else {
         console.log( 'Get1 error');
         console.log( responsePost);
