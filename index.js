@@ -254,7 +254,7 @@ app.get("/munzee",function(req, res){
 });
 
 app.get("/capture",function(req, res){
-    // console.log( "*** /nearby: munzee id = " +  req.query.id);
+    console.log( "*** /capture: munzee id = " +  req.query.id);
     var latitude = 52.22770094;
     var longitude = 6.09216487;
     var qrcode = "http://www.munzee.com/m/AmezorC/1748/7WL55G/";
