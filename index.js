@@ -299,7 +299,7 @@ function loginToMunzee( username, request, response) {
   // TODO: de variabele zouden uit de security moeten komen.
   var clientid = process.env.CLIENTID;
   var munzeeRQ = "https://api.munzee.com/oauth?response_type=code&client_id=" +
-        clientid + "&redirect_uri=" + redirect_uri + "&scope=read&state=" + username;
+        clientid + "&redirect_uri=" + redirect_uri + "&scope=read,capture_light&state=" + username;
   console.log( "*** LOGIN: " + munzeeRQ);
   response.redirect( munzeeRQ);
 }
