@@ -265,7 +265,9 @@ app.get("/capture",function(req, res){
     var myform = {
       data : bodyData
     };
+    console.log( 'Capture body: ');
     var formData = querystring.stringify(myform);
+    console.log( formData);
     var contentLength = formData.length;
     console.log( "Body of capture post with access token: " + req.session.accesstoken);
     requestPost( {
