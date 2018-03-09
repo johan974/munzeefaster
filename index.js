@@ -55,6 +55,7 @@ app.use(function(req, res, next) {
         return;
       } else {
         // Was the last action of the user > 8 hours?
+        console.log( "Has token, will it expire soon? "); 
         var lastVisitLongerThan8hoursAgo = ((new Date).getTime()) - ( 8 * 60 * 60000);
         var lastVisit = req.session.lastvisit;
         console.log( ' last visit = ' + lastVisit);
@@ -242,7 +243,7 @@ app.get("/munzee",function(req, res){
     }, function( error, responsePost, responseBody) {
       if (!error && responsePost.statusCode === 200) {
         var result = JSON.parse(responseBody);
-        console.log( 'Get1 success: ');
+        console.log( 'Get1 munzee success: ');
         console.log( result.data);
       } else {
         console.log( 'Get1 error');
@@ -279,7 +280,7 @@ app.get("/capture",function(req, res){
     }, function( error, responsePost, responseBody) {
       if (!error && responsePost.statusCode === 200) {
         var result = JSON.parse(responseBody);
-        console.log( 'Get1 success: ');
+        console.log( 'Capture success: ');
         console.log( result.data);
       } else {
         console.log( 'Get1 error');
