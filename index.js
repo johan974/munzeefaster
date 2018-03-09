@@ -255,7 +255,7 @@ app.get("/munzee",function(req, res){
 });
 
 app.get("/capture",function(req, res){
-    console.log( "*** /capture: munzee id = " +  req.query.id);
+    // console.log( "*** /capture: munzee id = " +  req.query.id);
     var latitude = 52.22770094;
     var longitude = 6.09216487;
     var qrcode = "http://www.munzee.com/m/AmezorC/1748/7WL55G/";
@@ -265,11 +265,11 @@ app.get("/capture",function(req, res){
     var myform = {
       data : bodyData
     };
-    console.log( 'Capture body: ');
     var formData = querystring.stringify(myform);
+    console.log( 'Capture body: ' + formData);
     console.log( formData);
     var contentLength = formData.length;
-    console.log( "Body of capture post with access token: " + req.session.accesstoken);
+    // console.log( "Body of capture post with access token: " + req.session.accesstoken);
     requestPost( {
       headers : {
         'Content-Type': 'application/x-www-form-urlencoded',
