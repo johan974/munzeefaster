@@ -258,16 +258,16 @@ app.get("/capture",function(req, res){
     // console.log( "*** /capture: munzee id = " +  req.query.id);
     var latitude = 52.22770094;
     var longitude = 6.09216487;
-    var qrcode = "http://www.munzee.com/m/AmezorC/1748/7WL55G/";
+    var qrcode = "https://www.munzee.com/m/AmezorC/1748/7WL55G/";
     var now = ((new Date).getTime());
     var bodyData = '{"language":"EN","latitude":' + latitude + ',"longitude":' + longitude +
-                    ',"code":' + qrcode + ',"time":' + now + ',"accuracy":6}';
+                    ',"code":"' + qrcode + '","time":' + now + ',"accuracy":6}';
     var myform = {
       data : bodyData
     };
+    console.log( 'Capture: json: ' + bodyData);
     var formData = querystring.stringify(myform);
     console.log( 'Capture body: ' + formData);
-    console.log( formData);
     var contentLength = formData.length;
     // console.log( "Body of capture post with access token: " + req.session.accesstoken);
     requestPost( {
